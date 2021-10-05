@@ -66,6 +66,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// parse .env if exists
+	if _, err := os.Stat(".env"); !os.IsNotExist(err) {
+		viper.SetConfigName(".env")
+		viper.SetConfigType("env")
+		err := viper.MergeInConfig()
+		if err != nil {
+			fmt.Println("fatal error .env file\n", err)
+			os.Exit(1)
+		}
+	}
+
 	log := CreateDefaultLogger(viper.GetString("log.level"))
 
 	token := viper.GetString("token")
@@ -75,9 +86,24 @@ func main() {
 
 	log.Infof("UTaskBot: VERSION: %s BUILD: %s COMMIT: %s", VERSION, BUILD_TIME, COMMIT)
 
+	basePoller := &tb.LongPoller{Timeout: viper.GetDuration("bot.poller_timeout")}
+
+	// processing only "private" chats
+	poller := tb.NewMiddlewarePoller(basePoller, func(upd *tb.Update) bool {
+		if upd.Message == nil {
+			return true
+		}
+
+		if !upd.Message.Private() {
+			return false
+		}
+
+		return true
+	})
+
 	bot, err := tb.NewBot(tb.Settings{
 		Token:  token,
-		Poller: &tb.LongPoller{Timeout: viper.GetDuration("bot.poller_timeout")},
+		Poller: poller,
 	})
 
 	if err != nil {
