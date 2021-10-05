@@ -68,9 +68,9 @@ func main() {
 
 	// parse .env if exists
 	if _, err := os.Stat(".env"); !os.IsNotExist(err) {
-		viper.SetConfigName(".env")
 		viper.SetConfigType("env")
-		err := viper.MergeInConfig()
+		viper.SetConfigName(".env")
+		err = viper.MergeInConfig()
 		if err != nil {
 			fmt.Println("fatal error .env file\n", err)
 			os.Exit(1)
