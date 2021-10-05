@@ -8,11 +8,10 @@ import (
 	"github.com/BorisMomot/UTask/bot/session"
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	"github.com/sirupsen/logrus"
-	"os"
-	"time"
-
 	"github.com/spf13/viper"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"os"
+	"strings"
 )
 
 var VERSION = "0.0.1"
@@ -45,10 +44,12 @@ func CreateDefaultLogger(loglevel string) *logrus.Logger {
 }
 
 func main() {
-	viper.SetEnvPrefix("utask")
+	viper.SetEnvPrefix("utask_bot")
 	viper.SetConfigName("botconfig")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.SetDefault("poller.timeout", "10s")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
@@ -57,7 +58,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	log := CreateDefaultLogger(viper.GetString("loglevel"))
+	log := CreateDefaultLogger(viper.GetString("log.level"))
 
 	token := viper.GetString("token")
 	if token == "" {
@@ -68,7 +69,7 @@ func main() {
 
 	bot, err := tb.NewBot(tb.Settings{
 		Token:  token,
-		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
+		Poller: &tb.LongPoller{Timeout: viper.GetDuration("bot.poller_timeout")},
 	})
 
 	if err != nil {

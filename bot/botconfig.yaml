@@ -1,6 +1,12 @@
-loglevel: trace
-server: "localhost:8080"
-fakeapi: true
+token: xxx
+
+log:
+  level: trace
+
 api:
   url: xxxx.ru:9999
   timeout: 5s
+  fakeapi: true
+
+poller:
+  timeout: 10s

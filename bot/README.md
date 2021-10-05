@@ -11,7 +11,7 @@
 * `UTASK_BOT_TOKEN` - телеграм-токен бота
 * `UTASK_BOT_API_URL` - url для обращений к API сервера. Пример: https://apiserver/api
 * `UTASK_BOT_API_TIMEOUT` - таймаут (в секундах), на чтение данных с API сервера. По умолчанию 5 сек
-* `UTASK_BOT_LOGLEVEL` - [INFO | WARNING | ERROR | TRACE] - Уровень логов
+* `UTASK_BOT_LOG_LEVEL` - [INFO | WARNING | ERROR | TRACE] - Уровень логов
 
 Конфигурационный файл представляет собой yaml. См. `botconfig.yaml`
 
