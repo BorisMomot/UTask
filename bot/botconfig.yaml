@@ -2,7 +2,5 @@ loglevel: trace
 server: "localhost:8080"
 fakeapi: true
 api:
-  http:
-    host: xxxx.ru
-    port: 9999
-    timeout: 5s
+  url: xxxx.ru:9999
+  timeout: 5s
