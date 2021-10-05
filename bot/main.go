@@ -43,6 +43,14 @@ func CreateDefaultLogger(loglevel string) *logrus.Logger {
 	return logger
 }
 
+func Help() string {
+	return `
+<b>HELP</b>
+/start - начать работу или сбросить в исходное состояние
+/help  - данное сообщение
+`
+}
+
 func main() {
 	viper.SetEnvPrefix("utask_bot")
 	viper.SetConfigName("botconfig")
@@ -77,13 +85,13 @@ func main() {
 		return
 	}
 
-	addr := viper.GetString("server")
+	addr := viper.GetString("api.url")
 	if addr == "" {
 		log.Fatalf("Unknown address for server")
 	}
 
 	var srvApi api.Api
-	if viper.GetBool("fakeapi") {
+	if viper.GetBool("api.fakeapi") {
 		srvApi = api.NewFakeApi()
 	} else {
 		srvApi = api.NewHttpApi(addr)
@@ -92,6 +100,10 @@ func main() {
 	scope := scope.NewScope(bot, srvApi, log)
 	sess := session.NewSessionManager(scope)
 	fsm := actor.NewFSM(scope)
+
+	bot.Handle("/help", func(msg *tb.Message) {
+		bot.Send(msg.Sender, Help(), tb.ModeHTML)
+	})
 
 	bot.Handle(tb.OnText, func(msg *tb.Message) {
 
