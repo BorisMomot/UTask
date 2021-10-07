@@ -72,7 +72,11 @@ func (ba *BaseActor) ToState(newState State) {
 		ba.state = newState
 		err := ba.state.OnEnter(ba)
 		if err != nil {
-			// TODO: error log
+			ba.Scope().Log.WithFields(logrus.Fields{
+				"func":  "ToState::OnEnter",
+				"state": newState.Name(),
+				"actor": ba.Name(),
+			}).Errorf("change state error: %s", err)
 		}
 		return
 	}
@@ -83,7 +87,12 @@ func (ba *BaseActor) ToState(newState State) {
 
 	err := ba.state.OnExit(ba)
 	if err != nil {
-		// TODO: error log
+		ba.Scope().Log.WithFields(logrus.Fields{
+			"func":  "ToState::OnExit",
+			"state": ba.state.Name(),
+			"actor": ba.Name(),
+		}).Errorf("change state error: %s", err)
+
 		return
 	}
 
@@ -91,7 +100,12 @@ func (ba *BaseActor) ToState(newState State) {
 
 	err = ba.state.OnEnter(ba)
 	if err != nil {
-		// TODO: error log
+		ba.Scope().Log.WithFields(logrus.Fields{
+			"func":  "ToState::OnEnter",
+			"state": newState.Name(),
+			"actor": ba.Name(),
+		}).Errorf("change state error: %s", err)
+
 		return
 	}
 }
