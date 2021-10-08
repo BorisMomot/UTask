@@ -1,0 +1,12 @@
+token: xxx
+
+log:
+  level: trace
+
+api:
+  url: xxxx.ru:9999
+  timeout: 5s
+  fakeapi: true
+
+poller:
+  timeout: 10s

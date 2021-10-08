@@ -1,0 +1,24 @@
+name: bot-tests
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.17
+
+    steps:
+      - name: Setup Go environment
+        uses: actions/setup-go@v2.1.4
+        with:
+          go-version: 1.17
+      - uses: actions/checkout@v2
+      - name: tests
+        run: |
+            cd bot
+            go test -mod vendor
