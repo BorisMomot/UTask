@@ -1,0 +1,10 @@
+version: '3.2'
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: utask-bot
+    tty: true
+    env_file:
+      - .env

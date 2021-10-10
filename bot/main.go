@@ -11,7 +11,9 @@ import (
 	"github.com/spf13/viper"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 var VERSION = "0.0.1"
@@ -56,6 +58,7 @@ func main() {
 	viper.SetConfigName("botconfig")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/opt/utask")
 	viper.SetDefault("poller.timeout", "10s")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
@@ -167,5 +170,12 @@ func main() {
 		}
 	})
 
-	bot.Start()
+	go bot.Start()
+
+	signals := make(chan os.Signal)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	<-signals
+
+	log.Infoln("Terminate..")
+	bot.Stop()
 }
