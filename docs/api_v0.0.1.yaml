@@ -1,81 +1,90 @@
-openapi: 3.0.0
+swagger: '2.0'
 info:
-  description: |
-    This is a sample Task server for pet project. 
-  version: "0.0.1"
-  title: Tasks Petproject
-  termsOfService: 'http://swagger.io/terms/'
+  version: 0.0.1
+  title: Pet project for tasks managment
+  description: Declare Api between chat bot and server part
   contact:
     email: bolik-u13@mail.ru
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/BorisMomot/UTask/0.0.1
-  - url: 'https://utask.swagger.io/v2'
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 tags:
   - name: user
     description: Operations about user
-  - name: group
-    description: Group users in groups and manage them on this abstraction level
+  - name: role
+    description: Role add users in groups and manage them on this abstraction level
   - name: project
     description: Access to project 
   - name: task
     description: Manage projects task
+
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 paths:
 # --------------------------------------------------------------------
+# Добавить список фильров
+
   /users:
     get:
       tags:
         - user
       summary: Print all users in system
+      description: Return array of users
       operationId: getUsers
+      produces:
+        - application/xml
+        - application/json
       parameters:
         - name: filterField
           in: query
           description: The filter filed
           required: false
-          schema:
-            type: string
+          type: string
         - name: filterValue
           in: query
           description: The filter value
           required: false
-          schema:
-            type: string
+          type: string
       responses:
         '200':
           description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/UserInfo'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserInfo'
+          
         '202':
           description: In case query needs long time
         '400':
           description: Invalid username/password supplied
+  
+  /userfilters:
+    get:
+      tags:
+        - user
+      summary: Print all available filters for users
+      description: Return array of filters
+      operationId: getUsersFilters
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserFilter'
+          
+        '202':
+          description: In case query needs long time
+        '400':
+          description: Doesn't find anything
+  
   /user:
     post:
       tags:
@@ -83,68 +92,25 @@ paths:
       summary: Create user
       description: This can only be done by the logged in user.
       operationId: createUser
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: User that needed to add to the system
+          required: true
+          schema:
+            $ref: '#/definitions/User'
       responses:
         '201':
           description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Created user object
-        required: true
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/json:
-              schema:
-                type: string
-            application/xml:
-              schema:
-                type: string
-        '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      operationId: logoutUser
-      responses:
-        default:
-          description: successful operation
-  '/user/{username}':
+        '405':
+          description: Invalid input
+  '/username/{username}':
     get:
       tags:
         - user
@@ -155,48 +121,39 @@ paths:
           in: path
           description: The name that needs to be fetched.
           required: true
-          schema:
-            type: string
+          type: string
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int64
-            application/xml:
-              schema:
-                type: integer
-                format: int64
+          schema:
+            type: integer
+            format: int64
         '400':
           description: Invalid username supplied
         '404':
           description: User not found
-  '/user/{userid}':
+  '/user/{userId}':
     get:
       tags:
         - user
       summary: Get user by user id
+      description: Return single user
       operationId: getUserById
+      produces:
+        - application/xml
+        - application/json
       parameters:
-        - name: userid
+        - name: userId
           in: path
           description: The name that needs to be fetched.
           required: true
-          schema:
-            type: integer
-            format: int64
+          type: integer
+          format: int64
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/UserInfo'
+          schema:
+            $ref: '#/definitions/UserInfo'
         '400':
           description: Invalid username supplied
         '404':
@@ -208,25 +165,22 @@ paths:
       description: This can only be done by the logged in user.
       operationId: updateUser
       parameters:
-        - name: userid
+        - name: userId
           in: path
           description: name that need to be updated
           required: true
-          schema:
-            type: integer
-            format: int64
+          type: integer
+          format: int64
         - name: userfiled
           in: query
           description: field that need to be updated
           required: true
-          schema:
-            type: string
+          type: string
         - name: uservalue
           in: query
           description: value that need to be updated
           required: true
-          schema:
-            type: string
+          type: string
       responses:
         '200':
           description: successful operation
@@ -234,13 +188,6 @@ paths:
           description: Invalid user supplied
         '404':
           description: User not found
-      # requestBody:
-      #   content:
-      #     application/json:
-      #       schema:
-      #         $ref: '#/components/schemas/User'
-      #   description: Updated user object
-      #   required: true
     delete:
       tags:
         - user
@@ -248,13 +195,12 @@ paths:
       description: This can only be done by the logged in user.
       operationId: deleteUser
       parameters:
-        - name: userid
+        - name: userId
           in: path
           description: The name that needs to be deleted
           required: true
-          schema:
-            type: integer
-            format: int64
+          type: integer
+          format: int64
       responses:
         '200':
           description: Successfull delete
@@ -269,492 +215,339 @@ paths:
         - project
       summary: All users in system
       operationId: getProject
+      produces:
+        - application/xml
+        - application/json
       parameters:
         - name: filterfield
           in: query
           description: The filter filed
           required: false
-          schema:
-            type: string
+          type: string
         - name: filtervalue
           in: query
           description: The filter value
           required: false
-          schema:
-            type: string
+          type: string
       responses:
         '200':
           description: successful operation
-          # headers:
-          #   X-Rate-Limit:
-          #     description: calls per hour allowed by the user
-          #     schema:
-          #       type: integer
-          #       format: int32
-          #   X-Expires-After:
-          #     description: date in UTC when token expires
-          #     schema:
-          #       type: string
-          #       format: date-time
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ProjectInfo'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectInfo'
         '400':
           description: Invalid parameters
         '404':
           description: No project with this parameters
-  /project:
-    post:
-      tags:
-        - project
-      summary: Add a new task to the store
-      operationId: addProject
-      responses:
-        '201':
-          description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Project'
-        description: Created project object
-        required: true
-  '/project/{projectname}':
+  /projectfilters:
     get:
       tags:
         - project
-      summary: Get projectid by name
-      operationId: getProjectByName
-      parameters:
-        - name: projectname
-          in: path
-          description: The name that needs to be fetched.
-          required: true
-          schema:
-            type: string
+      summary: Print all available filters for project
+      description: Return array of filters
+      operationId: getProjectsFilters
+      produces:
+        - application/xml
+        - application/json
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int64
-            application/xml:
-              schema:
-                type: integer
-                format: int64
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectFilter'
+          
+        '202':
+          description: In case query needs long time
         '400':
-          description: Invalid projectname supplied
-        '404':
-          description: Project not found
-  '/project/{projectid}':
-    get:
-      tags:
-        - project
-      summary: Get project info by id
-      operationId: getProjectById
-      parameters:
-        - name: projectid
-          in: path
-          description: The name that needs to be fetched.
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ProjectInfo'
-        '400':
-          description: Invalid projectname supplied
-        '404':
-          description: Project not found
-    patch:
-      tags:
-        - project
-      summary: Update project
-      description: Update project
-      operationId: updateProject
-      parameters:
-        - name: projectid
-          in: path
-          description: name that need to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: groupFiled
-          in: query
-          description: field that need to be updated
-          required: true
-          schema:
-            type: string
-        - name: groupValue
-          in: query
-          description: value that need to be updated
-          required: true
-          schema:
-            type: string
-      responses:
-        '400':
-          description: Invalid  project id supplied
-        '404':
-          description: Project not found
-    delete:
-      tags:
-        - project
-      summary: Delete project
-      description: This can only be done by the logged in user.
-      operationId: deleteProject
-      parameters:
-        - name: projectid
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+          description: Doesn't find anything
 # --------------------------------------------------------------------
-  /groups:
-    get:
-      tags:
-        - group
-      summary: All groups in system
-      operationId: getGroup
-      parameters:
-        - name: filterField
-          in: query
-          description: The filter filed
-          required: false
-          schema:
-            type: string
-        - name: filterValue
-          in: query
-          description: The filter value
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GroupInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/GroupInfo'
-        '400':
-          description: Invalid username/password supplied
-  /group:
+  /roles:
+      get:
+        tags:
+          - role
+        summary: Print all roles in system
+        description: Return array of roles
+        operationId: getRoles
+        produces:
+          - application/xml
+          - application/json
+        responses:
+          '200':
+            description: successful operation
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/RoleInfo'
+            
+          '202':
+            description: In case query needs long time
+          '400':
+            description: Invalid username/password supplied
+  /role:
     post:
       tags:
-        - group
-      summary: Add a new group 
-      operationId: addGroup
+        - role
+      summary: Create role
+      description: Create role
+      operationId: createRole
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Role that needed to add to the system
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
       responses:
         '201':
           description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Group'
-        description: Created group object
-        required: true
-  '/group/{groupname}':
+        '405':
+          description: Invalid input
+  '/role/{roleId}':
     get:
       tags:
-        - group
-      summary: Get task group id
-      operationId: getGroupIdByName
+        - role
+      summary: Get role by user id
+      description: Return single role
+      operationId: getRoleById
+      produces:
+        - application/xml
+        - application/json
       parameters:
-        - name: groupname
+        - name: roleId
           in: path
-          description: The name that needs to be fetched. 
+          description: The name that needs to be fetched.
           required: true
-          schema:
-            type: string
+          type: integer
+          format: int64
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int64
-            application/xml:
-              schema:
-                type: integer
-                format: int64
+          schema:
+            $ref: '#/definitions/RoleInfo'
         '400':
-          description: Invalid username supplied
+          description: Invalid id supplied
         '404':
-          description: User not found
-  '/group/{groupid}':
-    get:
-      tags:
-        - group
-      summary: Get group info by id
-      operationId: getGroupById
-      parameters:
-        - name: groupid
-          in: path
-          description: The name that needs to be fetched. Use 1 for testing.
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GroupInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/GroupInfo'
-        '400':
-          description: Invalid group id supplied
-        '404':
-          description: Group not found
-    patch:
-      tags:
-        - group
-      summary: Update group
-      description: This can only be done by the logged in user.
-      operationId: updateGroup
-      parameters:
-        - name: groupid
-          in: path
-          description: name that need to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: groupFiled
-          in: query
-          description: field that need to be updated
-          required: true
-          schema:
-            type: string
-        - name: groupValue
-          in: query
-          description: value that need to be updated
-          required: true
-          schema:
-            type: string
-      responses:
-        '400':
-          description: Invalid groupid supplied
-        '404':
-          description: Group id not found
+          description: Role not found
     delete:
       tags:
-        - group
-      summary: Delete group
-      description: This can only be done by the logged in user.
-      operationId: deleteGroup
+        - role
+      summary: Delete role
+      description: Delete role
+      operationId: deleteRole
       parameters:
-        - name: groupid
+        - name: roleId
           in: path
           description: The name that needs to be deleted
           required: true
-          schema:
-            type: integer
-            format: int64
+          type: integer
+          format: int64
       responses:
+        '200':
+          description: Successfull delete
         '400':
-          description: Invalid groupid supplied
+          description: Invalid id supplied
         '404':
-          description: Group id not found
+          description: Id not found
 # --------------------------------------------------------------------
   /tasks:
+      get:
+        tags:
+          - task
+        summary: Print all tasks in system
+        description: Return array of tasks
+        operationId: getTasks
+        produces:
+          - application/xml
+          - application/json
+        parameters:
+          - name: filterField
+            in: query
+            description: The filter filed
+            required: false
+            type: string
+          - name: filterValue
+            in: query
+            description: The filter value
+            required: false
+            type: string
+        responses:
+          '200':
+            description: successful operation
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/TaskInfo'
+            
+          '202':
+            description: In case query needs long time
+          '400':
+            description: Invalid taskname/password supplied
+  /taskfilters:
     get:
       tags:
         - task
-      summary: All tasks in system
-      operationId: getTasks
-      parameters:
-        - name: filterField
-          in: query
-          description: The filter filed
-          required: false
-          schema:
-            type: string
-        - name: filterValue
-          in: query
-          description: The filter value
-          required: false
-          schema:
-            type: string
+      summary: Print all available filters for task
+      description: Return array of filters
+      operationId: getTaskFilters
+      produces:
+        - application/xml
+        - application/json
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GroupInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/GroupInfo'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TaskFilter'
+          
+        '202':
+          description: In case query needs long time
         '400':
-          description: Invalid fiter type or filter value
-        '404':
-          description: Didn't find any tasks 
+          description: Doesn't find anything
+  
   /task:
     post:
       tags:
         - task
-      summary: Add a new task 
-      operationId: addTask
+      summary: Create task
+      description: This can only be done by the logged in task.
+      operationId: createTask
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Task that needed to add to the system
+          required: true
+          schema:
+            $ref: '#/definitions/Task'
       responses:
         '201':
           description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Task'
-        description: Created Task object
-        required: true
-  '/task/{taskname}':
+        '405':
+          description: Invalid input
+  '/taskname/{taskName}':
     get:
       tags:
         - task
-      summary: Get task by Id
-      operationId: getTaskIdByName
+      summary: Get task id by task name
+      operationId: getTaskByName
       parameters:
-        - name: taskname
+        - name: taskName
           in: path
           description: The name that needs to be fetched.
           required: true
-          schema:
-            type: string
+          type: string
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int64
-            application/xml:
-              schema:
-                type: integer
-                format: int64
+          schema:
+            type: integer
+            format: int64
         '400':
-          description: Invalid task name supplied
+          description: Invalid taskname supplied
         '404':
           description: Task not found
-  '/task/{taskid}':
+  '/task/{taskId}':
     get:
       tags:
         - task
-      summary: Get task by user id
+      summary: Get task by task id
+      description: Return single task
       operationId: getTaskById
+      produces:
+        - application/xml
+        - application/json
       parameters:
-        - name: taskid
+        - name: taskId
           in: path
-          description: The name that needs to be fetched. Use 1 for testing.
+          description: The name that needs to be fetched.
           required: true
-          schema:
-            type: integer
-            format: int64
+          type: integer
+          format: int64
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaskInfo'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/TaskInfo'
+          schema:
+            $ref: '#/definitions/UserInfo'
         '400':
-          description: Invalid id supplied
+          description: Invalid taskname supplied
         '404':
-          description: Task not found
-    put:
+          description: User not found
+    patch:
       tags:
         - task
       summary: Updated task
-      description: This can only be done by the logged in user.
+      description: This can only be done by the logged in task.
       operationId: updateTask
       parameters:
-        - name: taskid
+        - name: taskId
           in: path
           description: name that need to be updated
           required: true
-          schema:
-            type: integer
-            format: int64
-        - name: userFiled
+          type: integer
+          format: int64
+        - name: taskfiled
           in: query
           description: field that need to be updated
           required: true
-          schema:
-            type: string
-        - name: userValue
+          type: string
+        - name: taskvalue
           in: query
           description: value that need to be updated
           required: true
-          schema:
-            type: string
+          type: string
       responses:
-        '201':
-          description: Parameter was changed
+        '200':
+          description: successful operation
         '400':
-          description: Invalid user supplied
+          description: Invalid task supplied
         '404':
           description: User not found
     delete:
       tags:
         - task
       summary: Delete task
-      description: This can only be done by the logged in user.
+      description: This can only be done by the logged in task.
       operationId: deleteTask
       parameters:
-        - name: taskid
+        - name: taskId
           in: path
           description: The name that needs to be deleted
           required: true
-          schema:
-            type: integer
-            format: int64
+          type: integer
+          format: int64
       responses:
+        '200':
+          description: Successfull delete
         '400':
-          description: Invalid task id supplied
+          description: Invalid taskname supplied
         '404':
-          description: Task not found
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-externalDocs:
-  description: Find out more about Swagger
-  url: 'http://swagger.io'
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-components:
-  schemas:
+          description: User not found
+
+# Добавить список фильров
+
+
+
+# ///////////////////////////////////////////////
+# ///////////////////////////////////////////////
+# ///////////////////////////////////////////////
+# ///////////////////////////////////////////////
+
+# components:
+definitions:
     # --------------------------------------------------------------------
     UserInfo:
       type: object
@@ -776,8 +569,26 @@ components:
           type: integer
           format: int32
           description: User Status
+        userRoles:  
+          type: array
+          items: 
+            type: integer
+            format: int64
       xml:
         name: UserInfo
+    
+    UserFilter:
+      type: object
+      properties:
+        filterName:
+          type: string
+        filterValues:  
+          type: array
+          items: 
+            type: string
+      xml:
+        name: UserFilter
+    
     User:
       type: object
       properties:
@@ -793,8 +604,10 @@ components:
           type: string
       xml:
         name: User
+    
+
     # --------------------------------------------------------------------
-    GroupInfo:
+    RoleInfo:
       type: object
       properties:
         id:
@@ -805,16 +618,17 @@ components:
         description:
           type: string
       xml:
-        name: ProjectInfo
-    Group:
+        name: RoleInfo
+        
+    Role:
       type: object
       properties:
-        name:
+        rolename:
           type: string
         description:
           type: string
       xml:
-        name: Project
+        name: Role
     # --------------------------------------------------------------------
     ProjectInfo:
       type: object
@@ -828,15 +642,26 @@ components:
           type: string
       xml:
         name: ProjectInfo
-    Project:
+    ProjectFilter:
       type: object
       properties:
-        name:
+        filterName:
           type: string
-        description:
-          type: string
+        filterValues:  
+          type: array
+          items: 
+            type: string
       xml:
-        name: Project
+        name: ProjectFilter
+    # Project:
+    #   type: object
+    #   properties:
+    #     name:
+    #       type: string
+    #     description:
+    #       type: string
+    #   xml:
+    #     name: Project
     # --------------------------------------------------------------------
     TaskInfo:
       type: object
@@ -859,8 +684,21 @@ components:
           format: int64
         description:
           type: string
+        stored:
+          type: string
       xml:
         name: ProjectInfo
+    TaskFilter:
+      type: object
+      properties:
+        filterName:
+          type: string
+        filterValues:  
+          type: array
+          items: 
+            type: string
+      xml:
+        name: TaskFilter
     Task:
       type: object
       properties:
@@ -879,51 +717,41 @@ components:
           format: int64
         status:
           type: string
+        stored:
+          type: string
+          enum:
+            - bugzilla
+            - ytrack
       xml:
         name: Project
     # --------------------------------------------------------------------
     
-    
-    # ApiResponse:
-    #   type: object
-    #   properties:
-    #     code:
-    #       type: integer
-    #       format: int32
-    #     type:
-    #       type: string
-    #     message:
-    #       type: string
-  requestBodies:
-    Pet:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Task'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/Task'
-      description: Pet object that needs to be added to the store
-      required: true
-    UserArray:
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/User'
-      description: List of user object
-      required: true
-  securitySchemes:
-    utask_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'http://utask.swagger.io/oauth/dialog'
-          scopes:
-            'write:task': modify task in your account
-            'read:task': read your task
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /nii/UTask/0.0.1
+schemes:
+ - https
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+
+  
+
+
+
+
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
