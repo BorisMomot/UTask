@@ -18,12 +18,12 @@ func (s *SelectConfirmState) Name() string {
 	return "SelectConfirmState"
 }
 
-func NewSelectConfirmState() actor.State {
+func NewSelectConfirmState() *SelectConfirmState {
 	return &SelectConfirmState{}
 }
 
 func (s *SelectConfirmState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return toBegin(s, act, msg.Sender, txt_CANCALLED)
+	return ToMainMenu(s, act, msg.Sender, TXT_CANCALLED)
 }
 
 func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
@@ -44,7 +44,7 @@ func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	ctmp, ok := act.Storage().Get("component")
 	if !ok {
 		log.Infof("Unknown component")
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 	component := ctmp.(*api.Component)
 
@@ -56,7 +56,7 @@ func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 		act.ToState(NewSelectComponentState())
 		return actor.RetRepeatProcessing, nil
 	} else if query == "CANCEL" {
-		return toBegin(s, act, cb.Sender, txt_CANCALLED)
+		return ToMainMenu(s, act, cb.Sender, TXT_CANCALLED)
 	} else if query == "OK" {
 		act.ToState(NewCreateBugState())
 		return actor.RetRepeatProcessing, nil

@@ -7,20 +7,20 @@ import (
 )
 
 const (
-	defaultPageSize    = 6
-	txt_INTERNAL_ERROR = "Внутренняя ошибка. Пожалуйста попробуйте ещё раз или сообщите о проблеме"
-	txt_CANCALLED      = "отменён.."
-	txt_USER_MAIN_MENU = "❊❊❊ Menu ❊❊❊"
+	DEFAULT_PAGE_SIZE  = 6
+	TXT_INTERNAL_ERROR = "Внутренняя ошибка. Пожалуйста попробуйте ещё раз или сообщите о проблеме"
+	TXT_CANCALLED      = "отменён.."
+	TXT_USER_MAIN_MENU = "❊❊❊ Menu ❊❊❊"
 )
 
-func toBegin(state actor.State, act actor.Actor, usr *tb.User, txt string) (actor.RetCode, error) {
+func ToMainMenu(state actor.State, act actor.Actor, usr *tb.User, txt string) (actor.RetCode, error) {
 	log := act.Log().WithFields(
 		logrus.Fields{
-			"func":  "toBegin",
+			"func":  "ToMainMenu",
 			"state": state.Name(),
 		})
 
-	act.ToState(NewDefaultState())
+	act.ToState(NewMainMenuState())
 
 	if tmp, ok := act.Storage().Get("dialog"); ok {
 		dlg := tmp.(*tb.Message)

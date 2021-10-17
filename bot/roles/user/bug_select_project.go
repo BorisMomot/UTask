@@ -20,12 +20,12 @@ func (s *SelectProjectState) Name() string {
 	return "SelectProjectState"
 }
 
-func NewSelectProjectState() actor.State {
+func NewSelectProjectState() *SelectProjectState {
 	return &SelectProjectState{}
 }
 
 func (s *SelectProjectState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return toBegin(s, act, msg.Sender, txt_CANCALLED)
+	return ToMainMenu(s, act, msg.Sender, TXT_CANCALLED)
 }
 
 func (s *SelectProjectState) OnEnter(act actor.Actor) error {
@@ -47,7 +47,7 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 
 	query := strings.TrimSpace(cb.Data)
 	beg := 0
-	pageSize := defaultPageSize
+	pageSize := DEFAULT_PAGE_SIZE
 
 	tmp := strings.Split(query, ";")
 	if len(tmp) > 2 {
@@ -61,7 +61,7 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	if query == "UNUSED" {
 		return actor.RetProcessedOk, nil
 	} else if query == "BACK" {
-		return toBegin(s, act, cb.Message.Sender, txt_CANCALLED)
+		return ToMainMenu(s, act, cb.Message.Sender, TXT_CANCALLED)
 	} else if query == "NEXT" {
 
 	} else if query == "PREV" {
@@ -71,19 +71,19 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 		projects, ok := act.Storage().Get("projects")
 		if !ok {
 			log.Warn("not found projects list")
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+			return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 		}
 
 		id, err := strconv.Atoi(query)
 		if err != nil {
 			log.Warn("Convert project ID error: ", err)
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+			return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 		}
 
 		prj, ok := api.FindProjectById(projects.([]api.Project), int64(id))
 		if !ok {
 			log.Warn("not found project ", query)
-			return toBegin(s, act, cb.Sender, "")
+			return ToMainMenu(s, act, cb.Sender, "")
 		}
 
 		cb.Data = ""
@@ -94,8 +94,8 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 
 	data, err := act.Scope().Api.Get("/projects/list")
 	if err != nil {
-		act.ToState(NewDefaultState())
-		return actor.RetProcessedOk, err
+		log.Warn("call api error: ", err)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 
 	var plist api.ProjectListResponse
@@ -107,7 +107,7 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	err = act.Storage().Set("projects", plist.Projects)
 	if err != nil {
 		log.Warn("save projects list error: ", err)
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 
 	blst := make([]helpers.BtnItem, 0, len(plist.Projects))

@@ -12,19 +12,19 @@ const (
 	menu_LIST   = "ch_btn_list"
 )
 
-type DefaultState struct {
+type MainMenuState struct {
 	actor.DefaultState
 }
 
-func (s *DefaultState) Name() string {
-	return "DefaultState"
+func (s *MainMenuState) Name() string {
+	return "MainMenuState"
 }
 
-func NewDefaultState() actor.State {
-	return &DefaultState{}
+func NewMainMenuState() *MainMenuState {
+	return &MainMenuState{}
 }
 
-func (s *DefaultState) MainMenu() *tb.ReplyMarkup {
+func (s *MainMenuState) mainMenu() *tb.ReplyMarkup {
 	menu := &tb.ReplyMarkup{}
 
 	btnCreate := menu.Data("☎️ Сообщить о проблеме", menu_CREATE)
@@ -36,7 +36,7 @@ func (s *DefaultState) MainMenu() *tb.ReplyMarkup {
 	return menu
 }
 
-func (s *DefaultState) showMainMenu(act actor.Actor, usr *tb.User) (actor.RetCode, error) {
+func (s *MainMenuState) showMainMenu(act actor.Actor, usr *tb.User) (actor.RetCode, error) {
 	log := act.Log().WithFields(
 		logrus.Fields{
 			"func":  "showMainMenu",
@@ -46,10 +46,10 @@ func (s *DefaultState) showMainMenu(act actor.Actor, usr *tb.User) (actor.RetCod
 	var err error
 	if tmp, ok := act.Storage().Get("dialog"); ok {
 		dlg := tmp.(*tb.Message)
-		_, err = act.Scope().Bot.Edit(dlg, txt_USER_MAIN_MENU, s.MainMenu(), tb.ModeHTML)
+		_, err = act.Scope().Bot.Edit(dlg, TXT_USER_MAIN_MENU, s.mainMenu(), tb.ModeHTML)
 	} else {
 		var dlg *tb.Message
-		dlg, err = act.Scope().Bot.Send(usr, txt_USER_MAIN_MENU, s.MainMenu())
+		dlg, err = act.Scope().Bot.Send(usr, TXT_USER_MAIN_MENU, s.mainMenu())
 		if dlg != nil {
 			act.Storage().Set("dialog", dlg)
 		}
@@ -62,18 +62,18 @@ func (s *DefaultState) showMainMenu(act actor.Actor, usr *tb.User) (actor.RetCod
 	return actor.RetProcessedOk, err
 }
 
-func (s *DefaultState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	_, err := act.Scope().Bot.Send(msg.Sender, txt_USER_MAIN_MENU, s.MainMenu())
+func (s *MainMenuState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
+	_, err := act.Scope().Bot.Send(msg.Sender, TXT_USER_MAIN_MENU, s.mainMenu())
 	return actor.RetProcessedOk, err
 }
 
-func (s *DefaultState) OnMessage(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
+func (s *MainMenuState) OnMessage(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
 	// FIXME: not realized yet
 	_, err := act.Scope().Bot.Send(msg.Sender, "[OK]: "+msg.Text)
 	return actor.RetProcessedOk, err
 }
 
-func (s *DefaultState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
+func (s *MainMenuState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
 	log := act.Log().WithFields(
 		logrus.Fields{
 			"func":  "OnCallback",

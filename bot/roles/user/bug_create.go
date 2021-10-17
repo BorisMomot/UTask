@@ -16,12 +16,12 @@ func (s *CreateBugState) Name() string {
 	return "CreateBugState"
 }
 
-func NewCreateBugState() actor.State {
+func NewCreateBugState() *CreateBugState {
 	return &CreateBugState{}
 }
 
 func (s *CreateBugState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return toBegin(s, act, msg.Sender, txt_CANCALLED)
+	return ToMainMenu(s, act, msg.Sender, TXT_CANCALLED)
 }
 
 func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
@@ -34,14 +34,14 @@ func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.Ret
 	ptmp, ok := act.Storage().Get("project")
 	if !ok {
 		log.Warn("Unknown project")
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 	project := ptmp.(*api.Project)
 
 	ctmp, ok := act.Storage().Get("component")
 	if !ok {
 		log.Infof("Unknown component")
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 	component := ctmp.(*api.Component)
 

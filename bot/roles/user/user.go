@@ -10,8 +10,8 @@ type User struct {
 	*actor.DefaultActor
 }
 
-func NewUser(scope *scope.Scope, user *tb.User) actor.Actor {
-	return &User{actor.NewDefaultActor(scope, user, NewDefaultState())}
+func NewUser(scope *scope.Scope, user *tb.User) *User{
+	return &User{actor.NewDefaultActor(scope, user, NewMainMenuState())}
 }
 
 func (u *User) Name() string {

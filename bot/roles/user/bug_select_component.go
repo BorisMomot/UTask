@@ -20,12 +20,12 @@ func (s *SelectComponentState) Name() string {
 	return "SelectComponentState"
 }
 
-func NewSelectComponentState() actor.State {
+func NewSelectComponentState() *SelectComponentState {
 	return &SelectComponentState{}
 }
 
 func (s *SelectComponentState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return toBegin(s, act, msg.Sender, txt_CANCALLED)
+	return ToMainMenu(s, act, msg.Sender, TXT_CANCALLED)
 }
 
 func (s *SelectComponentState) OnEnter(act actor.Actor) error {
@@ -48,14 +48,14 @@ func (s *SelectComponentState) OnCallback(act actor.Actor, cb *tb.Callback) (act
 	ptmp, ok := act.Storage().Get("project")
 	if !ok {
 		log.Infof("Unknown project")
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 	project := ptmp.(*api.Project)
 
 	query := strings.TrimSpace(cb.Data)
 	cb.Data = ""
 	beg := 0
-	pageSize := defaultPageSize
+	pageSize := DEFAULT_PAGE_SIZE
 
 	tmp := strings.Split(query, ";")
 	if len(tmp) > 2 {
@@ -80,19 +80,19 @@ func (s *SelectComponentState) OnCallback(act actor.Actor, cb *tb.Callback) (act
 		components, ok := act.Storage().Get("components")
 		if !ok {
 			log.Warn("not found components list")
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+			return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 		}
 
 		id, err := strconv.Atoi(query)
 		if err != nil {
 			log.Warn("Convert component ID error: ", err)
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+			return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 		}
 
 		component, ok := api.FindComponentById(components.([]api.Component), int64(id))
 		if !ok {
 			log.Warn("not found component ", query)
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+			return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 		}
 
 		act.Storage().Set("component", component)
@@ -102,8 +102,8 @@ func (s *SelectComponentState) OnCallback(act actor.Actor, cb *tb.Callback) (act
 
 	data, err := act.Scope().Api.Get(fmt.Sprintf("/projects/components/list?project=%d", project.Id))
 	if err != nil {
-		act.ToState(NewDefaultState())
-		return actor.RetProcessedOk, err
+		log.Warn("call api error: ", err)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 
 	var clist api.ComponentListResponse
@@ -115,7 +115,7 @@ func (s *SelectComponentState) OnCallback(act actor.Actor, cb *tb.Callback) (act
 	err = act.Storage().Set("components", clist.Components)
 	if err != nil {
 		log.Warn("save components list error: ", err)
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
 	}
 
 	blst := make([]helpers.BtnItem, 0, len(clist.Components))
