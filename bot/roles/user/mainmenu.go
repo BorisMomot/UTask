@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"github.com/BorisMomot/UTask/bot/actor"
 	"github.com/BorisMomot/UTask/bot/roles/user/bug"
 	"github.com/BorisMomot/UTask/bot/roles/user/common"
@@ -10,8 +11,8 @@ import (
 )
 
 const (
-	menu_CREATE = "ch_btn_create"
-	menu_LIST   = "ch_btn_list"
+	menu_BUG  = "ch_btn_bug"
+	menu_TODO = "ch_btn_todo"
 )
 
 type MainMenuState struct {
@@ -26,10 +27,10 @@ func NewMainMenuState() *MainMenuState {
 	return &MainMenuState{}
 }
 
-func (s *MainMenuState) Activate(act actor.Actor, txt string) (actor.RetCode, error) {
+func (s *MainMenuState) Activate(act actor.Actor, txt string, options ...interface{}) (actor.RetCode, error) {
 	log := act.Log().WithFields(
 		logrus.Fields{
-			"func":  "ToMainMenu",
+			"func":  "Menu::Activate",
 			"state": act.State().Name(),
 		})
 
@@ -37,14 +38,14 @@ func (s *MainMenuState) Activate(act actor.Actor, txt string) (actor.RetCode, er
 
 	if tmp, ok := act.Storage().Get("dialog"); ok {
 		dlg := tmp.(*tb.Message)
-		_, err := act.Scope().Bot.Edit(dlg, txt, tb.ModeHTML)
+		_, err := act.Scope().Bot.Edit(dlg, txt, options...)
 		if err != nil {
 			log.Warnf("reset dialog error: %s", err)
 		}
 		act.Storage().Delete("dialog")
 	} else {
 		if txt != "" {
-			_, err := act.Scope().Bot.Send(act.User(), txt)
+			_, err := act.Scope().Bot.Send(act.User(), txt, options...)
 			if err != nil {
 				log.Warnf("send text error: %s", err)
 			}
@@ -56,8 +57,8 @@ func (s *MainMenuState) Activate(act actor.Actor, txt string) (actor.RetCode, er
 func (s *MainMenuState) mainMenu() *tb.ReplyMarkup {
 	menu := &tb.ReplyMarkup{}
 
-	btnCreate := menu.Data("☎️ Сообщить о проблеме", menu_CREATE)
-	btnList := menu.Data("🗓 Список задач", menu_LIST)
+	btnCreate := menu.Data("☎️ Сообщить о проблеме", menu_BUG)
+	btnList := menu.Data("🗓 Список задач", menu_TODO)
 	menu.Inline(
 		menu.Row(btnCreate),
 		menu.Row(btnList),
@@ -110,19 +111,18 @@ func (s *MainMenuState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetC
 		})
 
 	menuItem := strings.TrimSpace(cb.Data)
+	cb.Data = ""
 
 	log.Traceln("call menu item:", menuItem)
 
-	if menuItem == menu_CREATE {
-		cb.Data = ""
+	if menuItem == menu_BUG {
 		act.ToState(bug.NewSelectProjectState(s))
 		return actor.RetRepeatProcessing, nil
 	}
 
-	//if menuItem == menu_LIST {
-	//	act.ToState(NewUserListState())
-	//	return actor.RetRepeatProcessing, nil
-	//}
+	if menuItem == menu_TODO {
+		return s.Activate(act, fmt.Sprintf("..данный пункт ещё не реализован..\n<b>%s</b>", common.TXT_SHRUG), tb.ModeHTML)
+	}
 
 	return s.showMainMenu(act)
 }

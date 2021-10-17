@@ -5,5 +5,5 @@ import (
 )
 
 type Menu interface {
-	Activate(act actor.Actor, txt string) (actor.RetCode, error)
+	Activate(act actor.Actor, txt string, options ...interface{}) (actor.RetCode, error)
 }
