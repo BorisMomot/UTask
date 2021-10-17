@@ -15,7 +15,6 @@ const (
 
 type Actor interface {
 	Name() string
-	StateName() string
 	OnStart(msg *tb.Message) (RetCode, error)
 	OnMessage(msg *tb.Message) (RetCode, error)
 	OnCallback(cb *tb.Callback) (RetCode, error)
@@ -23,6 +22,8 @@ type Actor interface {
 	Log() *logrus.Entry
 	Scope() *scope.Scope
 	Storage() Storage
+	State() State
+	User() *tb.User
 }
 
 type DefaultActor struct {
@@ -40,6 +41,14 @@ func NewDefaultActor(scope *scope.Scope, user *tb.User, state State) *DefaultAct
 		user:    user,
 		storage: NewMemStorage(),
 	}
+}
+
+func (ba *DefaultActor) User() *tb.User {
+	return ba.user
+}
+
+func (ba *DefaultActor) State() State {
+	return ba.state
 }
 
 func (ba *DefaultActor) Scope() *scope.Scope {

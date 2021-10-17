@@ -1,10 +1,12 @@
-package user
+package bug
 
 import (
 	"fmt"
 	"github.com/BorisMomot/UTask/bot/actor"
 	"github.com/BorisMomot/UTask/bot/api"
 	"github.com/BorisMomot/UTask/bot/helpers"
+	"github.com/BorisMomot/UTask/bot/menu"
+	"github.com/BorisMomot/UTask/bot/roles/user/common"
 	"github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"strings"
@@ -12,18 +14,21 @@ import (
 
 type SelectConfirmState struct {
 	actor.DefaultState
+	mainMenu menu.Menu
 }
 
 func (s *SelectConfirmState) Name() string {
 	return "SelectConfirmState"
 }
 
-func NewSelectConfirmState() *SelectConfirmState {
-	return &SelectConfirmState{}
+func NewSelectConfirmState(mainMenu menu.Menu) *SelectConfirmState {
+	return &SelectConfirmState{
+		mainMenu: mainMenu,
+	}
 }
 
 func (s *SelectConfirmState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return ToMainMenu(s, act, msg.Sender, TXT_CANCALLED)
+	return s.mainMenu.Activate(act, common.TXT_CANCELLED)
 }
 
 func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
@@ -36,7 +41,7 @@ func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	ptmp, ok := act.Storage().Get("project")
 	if !ok {
 		log.Warn("Unknown project")
-		act.ToState(NewSelectProjectState())
+		act.ToState(NewSelectProjectState(s.mainMenu))
 		return actor.RetProcessedOk, nil
 	}
 	project := ptmp.(*api.Project)
@@ -44,7 +49,7 @@ func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	ctmp, ok := act.Storage().Get("component")
 	if !ok {
 		log.Infof("Unknown component")
-		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
+		return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 	}
 	component := ctmp.(*api.Component)
 
@@ -53,12 +58,12 @@ func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	log.Tracef("call: project=%s component=%s query=%s", project.Name, component.Name, query)
 
 	if query == "BACK" {
-		act.ToState(NewSelectComponentState())
+		act.ToState(NewSelectComponentState(s.mainMenu))
 		return actor.RetRepeatProcessing, nil
 	} else if query == "CANCEL" {
-		return ToMainMenu(s, act, cb.Sender, TXT_CANCALLED)
+		return s.mainMenu.Activate(act, common.TXT_CANCELLED)
 	} else if query == "OK" {
-		act.ToState(NewCreateBugState())
+		act.ToState(NewCreateBugState(s.mainMenu))
 		return actor.RetRepeatProcessing, nil
 	}
 

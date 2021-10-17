@@ -1,27 +1,32 @@
-package user
+package bug
 
 import (
 	"fmt"
 	"github.com/BorisMomot/UTask/bot/actor"
 	"github.com/BorisMomot/UTask/bot/api"
+	"github.com/BorisMomot/UTask/bot/menu"
+	"github.com/BorisMomot/UTask/bot/roles/user/common"
 	"github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type CreateBugState struct {
 	actor.DefaultState
+	mainMenu menu.Menu
 }
 
 func (s *CreateBugState) Name() string {
 	return "CreateBugState"
 }
 
-func NewCreateBugState() *CreateBugState {
-	return &CreateBugState{}
+func NewCreateBugState(mainMenu menu.Menu) *CreateBugState {
+	return &CreateBugState{
+		mainMenu: mainMenu,
+	}
 }
 
 func (s *CreateBugState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return ToMainMenu(s, act, msg.Sender, TXT_CANCALLED)
+	return s.mainMenu.Activate(act, common.TXT_CANCELLED)
 }
 
 func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
@@ -34,14 +39,14 @@ func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.Ret
 	ptmp, ok := act.Storage().Get("project")
 	if !ok {
 		log.Warn("Unknown project")
-		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
+		return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 	}
 	project := ptmp.(*api.Project)
 
 	ctmp, ok := act.Storage().Get("component")
 	if !ok {
 		log.Infof("Unknown component")
-		return ToMainMenu(s, act, cb.Sender, TXT_INTERNAL_ERROR)
+		return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 	}
 	component := ctmp.(*api.Component)
 
