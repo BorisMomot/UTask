@@ -8,3 +8,13 @@ type Project struct {
 type ProjectListResponse struct {
 	Projects []Project `json:"projects"`
 }
+
+func FindProjectById(projects []Project, id int64) (*Project, bool) {
+	for _, p := range projects {
+		if p.Id == id {
+			return &p, true
+		}
+	}
+
+	return nil, false
+}

@@ -1,4 +1,4 @@
-package roles
+package user
 
 import (
 	"github.com/BorisMomot/UTask/bot/actor"
@@ -7,12 +7,13 @@ import (
 )
 
 type User struct {
-	*actor.BaseActor
+	*actor.DefaultActor
 }
 
 func NewUser(scope *scope.Scope, user *tb.User) actor.Actor {
-	return &User{actor.NewBaseActor(scope, user, NewUserDefaultState())}
+	return &User{actor.NewDefaultActor(scope, user, NewDefaultState())}
 }
+
 func (u *User) Name() string {
-	return "(user)" + u.BaseActor.Name()
+	return "(user)" + u.DefaultActor.Name()
 }
