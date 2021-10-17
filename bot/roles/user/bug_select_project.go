@@ -12,10 +12,6 @@ import (
 	"strings"
 )
 
-const (
-	defaultPageSize = 2
-)
-
 type SelectProjectState struct {
 	actor.DefaultState
 }
@@ -29,8 +25,17 @@ func NewSelectProjectState() actor.State {
 }
 
 func (s *SelectProjectState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
+	return toBegin(s, act, msg.Sender, txt_CANCALLED)
+}
+
+func (s *SelectProjectState) OnEnter(act actor.Actor) error {
 	act.Storage().Delete("projects")
-	return actor.RetProcessedOk, nil
+	return nil
+}
+
+func (s *SelectProjectState) OnExit(act actor.Actor) error {
+	act.Storage().Delete("projects")
+	return nil
 }
 
 func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCode, error) {
@@ -44,7 +49,6 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	beg := 0
 	pageSize := defaultPageSize
 
-	log.Tracef("call: %s", query)
 	tmp := strings.Split(query, ";")
 	if len(tmp) > 2 {
 		query = tmp[0]
@@ -52,41 +56,39 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 		pageSize, _ = strconv.Atoi(tmp[2])
 	}
 
+	log.Tracef("call: btn=%s beginPage=%d pageSize=%d", query, beg, pageSize)
+
 	if query == "UNUSED" {
 		return actor.RetProcessedOk, nil
 	} else if query == "BACK" {
-		act.ToState(NewDefaultState())
-		return actor.RetRepeatProcessing, nil
+		return toBegin(s, act, cb.Message.Sender, txt_CANCALLED)
 	} else if query == "NEXT" {
 
 	} else if query == "PREV" {
 		beg = beg - pageSize
 	} else if len(query) > 0 {
-		log.Infof("select %s", query)
+		log.Infof("select project ID=%s", query)
 		projects, ok := act.Storage().Get("projects")
 		if !ok {
 			log.Warn("not found projects list")
-			act.ToState(NewDefaultState())
-			return actor.RetProcessedOk, nil
+			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
 		}
 
 		id, err := strconv.Atoi(query)
 		if err != nil {
 			log.Warn("Convert project ID error: ", err)
-			act.ToState(NewDefaultState())
-			return actor.RetProcessedOk, err
+			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
 		}
 
 		prj, ok := api.FindProjectById(projects.([]api.Project), int64(id))
 		if !ok {
 			log.Warn("not found project ", query)
-			act.ToState(NewDefaultState())
-			return actor.RetProcessedOk, nil
+			return toBegin(s, act, cb.Sender, "")
 		}
 
-		act.Storage().Delete("projects")
+		cb.Data = ""
 		act.Storage().Set("project", prj)
-		act.ToState(NewCreateBugState())
+		act.ToState(NewSelectComponentState())
 		return actor.RetRepeatProcessing, nil
 	}
 
@@ -105,14 +107,16 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	err = act.Storage().Set("projects", plist.Projects)
 	if err != nil {
 		log.Warn("save projects list error: ", err)
-		act.ToState(NewDefaultState())
-		return actor.RetProcessedOk, err
+		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
 	}
 
 	blst := make([]helpers.BtnItem, 0, len(plist.Projects))
 	for _, p := range plist.Projects {
 		blst = append(blst, helpers.BtnItem{p.Name, fmt.Sprintf("%d", p.Id)})
 	}
-	_, err = act.Scope().Bot.Edit(cb.Message, "Выберите проект", helpers.NewButtonList(blst, beg, pageSize))
+	dlg, err := act.Scope().Bot.Edit(cb.Message, "Выберите проект..", helpers.NewButtonList(blst, beg, pageSize))
+	if dlg != nil {
+		act.Storage().Set("dialog", dlg)
+	}
 	return actor.RetProcessedOk, err
 }

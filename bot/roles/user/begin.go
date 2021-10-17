@@ -8,9 +8,8 @@ import (
 )
 
 const (
-	txt_USER_MAIN_MENU = "❊❊❊ Menu ❊❊❊"
-	menu_CREATE        = "ch_btn_create"
-	menu_LIST          = "ch_btn_list"
+	menu_CREATE = "ch_btn_create"
+	menu_LIST   = "ch_btn_list"
 )
 
 type DefaultState struct {
@@ -37,15 +36,30 @@ func (s *DefaultState) MainMenu() *tb.ReplyMarkup {
 	return menu
 }
 
-func (s *DefaultState) toBegin(act actor.Actor, usr *tb.User, txt string) (actor.RetCode, error) {
-	if txt != "" {
-		_, err := act.Scope().Bot.Send(usr, txt)
-		return actor.RetProcessedOk, err
+func (s *DefaultState) showMainMenu(act actor.Actor, usr *tb.User) (actor.RetCode, error) {
+	log := act.Log().WithFields(
+		logrus.Fields{
+			"func":  "showMainMenu",
+			"state": s.Name(),
+		})
+
+	var err error
+	if tmp, ok := act.Storage().Get("dialog"); ok {
+		dlg := tmp.(*tb.Message)
+		_, err = act.Scope().Bot.Edit(dlg, txt_USER_MAIN_MENU, s.MainMenu(), tb.ModeHTML)
+	} else {
+		var dlg *tb.Message
+		dlg, err = act.Scope().Bot.Send(usr, txt_USER_MAIN_MENU, s.MainMenu())
+		if dlg != nil {
+			act.Storage().Set("dialog", dlg)
+		}
 	}
 
-	_, err := act.Scope().Bot.Send(usr, txt_USER_MAIN_MENU, s.MainMenu())
-	return actor.RetProcessedOk, err
+	if err != nil {
+		log.Warnf("update dialog error: %s", err)
+	}
 
+	return actor.RetProcessedOk, err
 }
 
 func (s *DefaultState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
@@ -54,7 +68,7 @@ func (s *DefaultState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode,
 }
 
 func (s *DefaultState) OnMessage(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-
+	// FIXME: not realized yet
 	_, err := act.Scope().Bot.Send(msg.Sender, "[OK]: "+msg.Text)
 	return actor.RetProcessedOk, err
 }
@@ -66,8 +80,9 @@ func (s *DefaultState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCo
 			"state": s.Name(),
 		})
 
-	log.Traceln("call")
 	menuItem := strings.TrimSpace(cb.Data)
+
+	log.Traceln("call menu item:", menuItem)
 
 	if menuItem == menu_CREATE {
 		cb.Data = ""
@@ -80,5 +95,5 @@ func (s *DefaultState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.RetCo
 	//	return actor.RetRepeatProcessing, nil
 	//}
 
-	return s.toBegin(act, cb.Sender, "")
+	return s.showMainMenu(act, cb.Sender)
 }
