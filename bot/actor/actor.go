@@ -20,62 +20,71 @@ type Actor interface {
 	OnMessage(msg *tb.Message) (RetCode, error)
 	OnCallback(cb *tb.Callback) (RetCode, error)
 	ToState(newState State)
-	Log() *logrus.Logger
+	Log() *logrus.Entry
 	Scope() *scope.Scope
+	Storage() Storage
 }
 
-type BaseActor struct {
-	state State
-	name  string
-	scope *scope.Scope
-	user  *tb.User
+type DefaultActor struct {
+	state   State
+	name    string
+	scope   *scope.Scope
+	user    *tb.User
+	storage Storage
 }
 
-func NewBaseActor(scope *scope.Scope, user *tb.User, state State) *BaseActor {
-	return &BaseActor{
-		scope: scope,
-		state: state,
-		user:  user,
+func NewDefaultActor(scope *scope.Scope, user *tb.User, state State) *DefaultActor {
+	return &DefaultActor{
+		scope:   scope,
+		state:   state,
+		user:    user,
+		storage: NewMemStorage(),
 	}
 }
 
-func (ba *BaseActor) Scope() *scope.Scope {
+func (ba *DefaultActor) Scope() *scope.Scope {
 	return ba.scope
 }
 
-func (ba *BaseActor) Log() *logrus.Logger {
-	return ba.scope.Log
+func (ba *DefaultActor) Log() *logrus.Entry {
+	return ba.scope.Log.WithFields(
+		logrus.Fields{
+			"actor": ba.Name(),
+		})
 }
 
-func (ba *BaseActor) Name() string {
+func (ba *DefaultActor) Storage() Storage {
+	return ba.storage
+}
+
+func (ba *DefaultActor) Name() string {
 	return ba.user.Username
 }
 
-func (ba *BaseActor) StateName() string {
+func (ba *DefaultActor) StateName() string {
 	return ba.state.Name()
 }
 
-func (ba *BaseActor) OnStart(msg *tb.Message) (RetCode, error) {
+func (ba *DefaultActor) OnStart(msg *tb.Message) (RetCode, error) {
 	return ba.state.OnStart(ba, msg)
 }
-func (ba *BaseActor) OnMessage(msg *tb.Message) (RetCode, error) {
+func (ba *DefaultActor) OnMessage(msg *tb.Message) (RetCode, error) {
 	return ba.state.OnMessage(ba, msg)
 }
 
-func (ba *BaseActor) OnCallback(cb *tb.Callback) (RetCode, error) {
+func (ba *DefaultActor) OnCallback(cb *tb.Callback) (RetCode, error) {
 	return ba.state.OnCallback(ba, cb)
 }
 
-func (ba *BaseActor) ToState(newState State) {
+func (ba *DefaultActor) ToState(newState State) {
 
 	if ba.state == nil {
 		ba.state = newState
 		err := ba.state.OnEnter(ba)
 		if err != nil {
-			ba.Scope().Log.WithFields(logrus.Fields{
+			ba.Log().WithFields(logrus.Fields{
 				"func":  "ToState::OnEnter",
 				"state": newState.Name(),
-				"actor": ba.Name(),
 			}).Errorf("change state error: %s", err)
 		}
 		return
@@ -87,10 +96,9 @@ func (ba *BaseActor) ToState(newState State) {
 
 	err := ba.state.OnExit(ba)
 	if err != nil {
-		ba.Scope().Log.WithFields(logrus.Fields{
+		ba.Log().WithFields(logrus.Fields{
 			"func":  "ToState::OnExit",
 			"state": ba.state.Name(),
-			"actor": ba.Name(),
 		}).Errorf("change state error: %s", err)
 
 		return
@@ -100,10 +108,9 @@ func (ba *BaseActor) ToState(newState State) {
 
 	err = ba.state.OnEnter(ba)
 	if err != nil {
-		ba.Scope().Log.WithFields(logrus.Fields{
+		ba.Log().WithFields(logrus.Fields{
 			"func":  "ToState::OnEnter",
 			"state": newState.Name(),
-			"actor": ba.Name(),
 		}).Errorf("change state error: %s", err)
 
 		return

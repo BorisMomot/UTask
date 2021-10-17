@@ -56,3 +56,16 @@ func NewButtonList(items []BtnItem, begin_num int, pageSize int) *tb.ReplyMarkup
 	keyb.Inline(rows...)
 	return keyb
 }
+
+func NewOkCancelBackButtons() *tb.ReplyMarkup {
+	keyb := &tb.ReplyMarkup{}
+	var rows []tb.Row
+
+	btnOk := keyb.Data("Ok", "OK")
+	btnCancel := keyb.Data("Cancel", "CANCEL")
+	btnBack := keyb.Data("Back", "BACK")
+
+	rows = append(rows, tb.Row{btnOk, btnBack, btnCancel})
+	keyb.Inline(rows...)
+	return keyb
+}

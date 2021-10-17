@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/BorisMomot/UTask/bot/actor"
-	"github.com/BorisMomot/UTask/bot/roles/user"
+	roleUser "github.com/BorisMomot/UTask/bot/roles/user"
 	"github.com/BorisMomot/UTask/bot/scope"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"sync"
@@ -29,7 +29,7 @@ func (s *SessionManager) Restore(user *tb.User) (actor.Actor, error) {
 	}
 	s.mut.RUnlock()
 
-	act := roles.NewUser(s.scope, user)
+	act := roleUser.NewUser(s.scope, user)
 
 	s.mut.Lock()
 	defer s.mut.Unlock()

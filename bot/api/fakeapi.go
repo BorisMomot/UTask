@@ -31,5 +31,22 @@ func (api *FakeApi) Get(query string) ([]byte, error) {
 		return tmp, nil
 	}
 
+	if strings.HasPrefix(query, "/projects/components/list?project=") {
+		resp := ComponentListResponse{
+			Components: []Component{
+				{Id: 1, Name: "Схемы"},
+				{Id: 2, Name: "Документация"},
+				{Id: 3, Name: "ПО"},
+			},
+		}
+
+		tmp, err := json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
+		return tmp, nil
+	}
+
 	return nil, nil
 }
