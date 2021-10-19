@@ -17,6 +17,7 @@ import (
 type SelectProjectState struct {
 	actor.DefaultState
 	mainMenu menu.Menu
+	projects []api.Project
 }
 
 func (s *SelectProjectState) Name() string {
@@ -35,11 +36,13 @@ func (s *SelectProjectState) OnStart(act actor.Actor, msg *tb.Message) (actor.Re
 
 func (s *SelectProjectState) OnEnter(act actor.Actor) error {
 	act.Storage().Delete("projects")
+	s.projects = make([]api.Project, 0)
 	return nil
 }
 
 func (s *SelectProjectState) OnExit(act actor.Actor) error {
 	act.Storage().Delete("projects")
+	s.projects = nil
 	return nil
 }
 
@@ -53,6 +56,7 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	query := strings.TrimSpace(cb.Data)
 	beg := 0
 	pageSize := common.DEFAULT_PAGE_SIZE
+	cb.Data = ""
 
 	tmp := strings.Split(query, ";")
 	if len(tmp) > 2 {
@@ -73,30 +77,24 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 		beg = beg - pageSize
 	} else if len(query) > 0 {
 		log.Infof("select project ID=%s", query)
-		projects, ok := act.Storage().Get("projects")
-		if !ok {
-			log.Warn("not found projects list")
-			return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
-		}
-
 		id, err := strconv.Atoi(query)
 		if err != nil {
 			log.Warn("Convert project ID error: ", err)
 			return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 		}
 
-		prj, ok := api.FindProjectById(projects.([]api.Project), int64(id))
+		prj, ok := api.FindProjectById(s.projects, int64(id))
 		if !ok {
 			log.Warn("not found project ", query)
 			return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 		}
 
-		cb.Data = ""
 		act.Storage().Set("project", prj)
 		act.ToState(NewSelectComponentState(s.mainMenu))
 		return actor.RetRepeatProcessing, nil
 	}
 
+	act.Scope().Bot.Notify(cb.Message.Chat, tb.Typing)
 	data, err := act.Scope().Api.Get("/projects/list")
 	if err != nil {
 		log.Warn("call api error: ", err)
@@ -109,19 +107,17 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 		return actor.RetProcessedOk, err
 	}
 
-	err = act.Storage().Set("projects", plist.Projects)
-	if err != nil {
-		log.Warn("save projects list error: ", err)
-		return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
-	}
-
-	blst := make([]helpers.BtnItem, 0, len(plist.Projects))
+	s.projects = plist.Projects
+	blst := make([]helpers.BtnItem, 0, len(s.projects))
 	for _, p := range plist.Projects {
 		blst = append(blst, helpers.BtnItem{p.Name, fmt.Sprintf("%d", p.Id)})
 	}
 	dlg, err := act.Scope().Bot.Edit(cb.Message, "Выберите проект..", helpers.NewButtonList(blst, beg, pageSize))
-	if dlg != nil {
+	if err != nil {
+		log.Warnln("send message error: ", err)
+	} else {
 		act.Storage().Set("dialog", dlg)
 	}
+
 	return actor.RetProcessedOk, err
 }

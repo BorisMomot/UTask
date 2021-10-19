@@ -18,6 +18,7 @@ type Actor interface {
 	OnStart(msg *tb.Message) (RetCode, error)
 	OnMessage(msg *tb.Message) (RetCode, error)
 	OnCallback(cb *tb.Callback) (RetCode, error)
+	OnUpload(msg *tb.Message) (RetCode, error)
 	ToState(newState State)
 	Log() *logrus.Entry
 	Scope() *scope.Scope
@@ -84,6 +85,11 @@ func (ba *DefaultActor) OnMessage(msg *tb.Message) (RetCode, error) {
 func (ba *DefaultActor) OnCallback(cb *tb.Callback) (RetCode, error) {
 	return ba.state.OnCallback(ba, cb)
 }
+
+func (ba *DefaultActor) OnUpload(msg *tb.Message) (RetCode, error) {
+	return ba.state.OnUpload(ba, msg)
+}
+
 
 func (ba *DefaultActor) ToState(newState State) {
 

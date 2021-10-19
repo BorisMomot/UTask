@@ -74,3 +74,26 @@ func (f *FSM) OnCallback(act Actor, cb *tb.Callback) error {
 
 	return nil
 }
+
+func (f *FSM) OnUpload(act Actor, msg *tb.Message) error {
+
+	log := f.scope.Log.WithFields(logrus.Fields{
+		"actor":  act.Name(),
+		"userID": msg.Sender.ID,
+		"func":   "OnUpload",
+	})
+
+	log.Tracef("upload media")
+
+	for {
+		ret, err := act.OnUpload(msg)
+		if err != nil {
+			return err
+		}
+		if ret != RetRepeatProcessing {
+			break
+		}
+	}
+
+	return nil
+}
