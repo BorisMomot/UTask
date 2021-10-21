@@ -6,6 +6,7 @@ type State interface {
 	Name() string
 	OnStart(act Actor, msg *tb.Message) (RetCode, error)
 	OnMessage(act Actor, msg *tb.Message) (RetCode, error)
+	OnEdited(act Actor, msg *tb.Message) (RetCode, error)
 	OnCallback(act Actor, cb *tb.Callback) (RetCode, error)
 	OnUpload(act Actor, msg *tb.Message) (RetCode, error)
 	OnExit(act Actor) error
@@ -19,6 +20,9 @@ func (s *DefaultState) OnStart(act Actor, msg *tb.Message) (RetCode, error) {
 	return RetProcessedOk, nil
 }
 func (s *DefaultState) OnMessage(act Actor, msg *tb.Message) (RetCode, error) {
+	return RetProcessedOk, nil
+}
+func (s *DefaultState) OnEdited(act Actor, msg *tb.Message) (RetCode, error) {
 	return RetProcessedOk, nil
 }
 func (s *DefaultState) OnExit(act Actor) error {

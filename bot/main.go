@@ -194,6 +194,24 @@ func main() {
 	bot.Handle(tb.OnDocument, fnOnUpload)
 	bot.Handle(tb.OnVoice, fnOnUpload)
 
+	bot.Handle(tb.OnEdited, func(msg *tb.Message) {
+
+		l := log.WithFields(logrus.Fields{
+			"func":   "OnEdited",
+			"userID": msg.Sender.ID,
+		})
+
+		actor, err := sess.Restore(msg.Sender)
+		if err != nil {
+			l.Errorf("Restore session error: %s", err)
+			return
+		}
+		err = fsm.OnEdited(actor, msg)
+		if err != nil {
+			l.WithFields(logrus.Fields{"actor": actor.Name()}).Errorln(err)
+		}
+	})
+
 	go bot.Start()
 
 	signals := make(chan os.Signal)

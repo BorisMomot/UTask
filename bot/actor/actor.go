@@ -17,6 +17,7 @@ type Actor interface {
 	Name() string
 	OnStart(msg *tb.Message) (RetCode, error)
 	OnMessage(msg *tb.Message) (RetCode, error)
+	OnEdited(msg *tb.Message) (RetCode, error)
 	OnCallback(cb *tb.Callback) (RetCode, error)
 	OnUpload(msg *tb.Message) (RetCode, error)
 	ToState(newState State)
@@ -80,6 +81,10 @@ func (ba *DefaultActor) OnStart(msg *tb.Message) (RetCode, error) {
 }
 func (ba *DefaultActor) OnMessage(msg *tb.Message) (RetCode, error) {
 	return ba.state.OnMessage(ba, msg)
+}
+
+func (ba *DefaultActor) OnEdited(msg *tb.Message) (RetCode, error) {
+	return ba.state.OnEdited(ba, msg)
 }
 
 func (ba *DefaultActor) OnCallback(cb *tb.Callback) (RetCode, error) {
