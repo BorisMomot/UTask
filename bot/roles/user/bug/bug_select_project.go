@@ -112,7 +112,7 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	for _, p := range plist.Projects {
 		blst = append(blst, helpers.BtnItem{p.Name, fmt.Sprintf("%d", p.Id)})
 	}
-	dlg, err := act.Scope().Bot.Edit(cb.Message, "Выберите проект..", helpers.NewButtonList(blst, beg, pageSize))
+	dlg, err := act.Scope().Bot.Edit(cb.Message, common.TXT_TITLE_CREATE_BUG + "\n---\nВыберите проект..", helpers.NewButtonList(blst, beg, pageSize), tb.ModeHTML)
 	if err != nil {
 		log.Warnln("send message error: ", err)
 	} else {

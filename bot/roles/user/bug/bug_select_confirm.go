@@ -15,8 +15,8 @@ import (
 type SelectConfirmState struct {
 	actor.DefaultState
 	mainMenu  menu.Menu
-	project   *api.Project
-	component *api.Component
+	project   api.Project
+	component api.Component
 }
 
 func (s *SelectConfirmState) Name() string {
@@ -45,14 +45,14 @@ func (s *SelectConfirmState) OnEnter(act actor.Actor) error {
 		log.Warn("Unknown project")
 		return common.ErrInternal
 	}
-	s.project = ptmp.(*api.Project)
+	s.project = ptmp.(api.Project)
 
 	ctmp, ok := act.Storage().Get("component")
 	if !ok {
 		log.Infof("Unknown component")
 		return common.ErrInternal
 	}
-	s.component = ctmp.(*api.Component)
+	s.component = ctmp.(api.Component)
 	return nil
 }
 
@@ -78,10 +78,10 @@ func (s *SelectConfirmState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	}
 
 	log.Infof("create bug for '%s'/'%s' ", s.project.Name, s.component.Name)
-	txt := fmt.Sprintf("<b>Проект:</b> %s\n<b>Компонент:</b> %s", s.project.Name, s.component.Name)
+	txt := fmt.Sprintf("%s\n\n<b>Проект:</b> %s\n<b>Компонент:</b> %s", common.TXT_TITLE_CREATE_BUG, s.project.Name, s.component.Name)
 	dlg, err := act.Scope().Bot.Edit(cb.Message, txt, helpers.NewOkCancelBackButtons(), tb.ModeHTML)
 	if err != nil {
-		log.Warnln("Send message error: %s", err)
+		log.Warnln("Send message error:", err)
 	} else {
 		act.Storage().Set("dialog", dlg)
 	}

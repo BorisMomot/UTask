@@ -9,8 +9,8 @@ import (
 type RetCode uint32
 
 const (
-	RetProcessedOk      = 0
-	RetRepeatProcessing = 1
+	RetProcessedOk      = RetCode(0)
+	RetRepeatProcessing = RetCode(1)
 )
 
 type Actor interface {
@@ -94,7 +94,6 @@ func (ba *DefaultActor) OnCallback(cb *tb.Callback) (RetCode, error) {
 func (ba *DefaultActor) OnUpload(msg *tb.Message) (RetCode, error) {
 	return ba.state.OnUpload(ba, msg)
 }
-
 
 func (ba *DefaultActor) ToState(newState State) {
 

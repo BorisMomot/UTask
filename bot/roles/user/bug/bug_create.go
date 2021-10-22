@@ -32,8 +32,8 @@ func mediaCount(mlist *[]Media) int {
 type CreateBugState struct {
 	actor.DefaultState
 	mainMenu      menu.Menu
-	project       *api.Project
-	component     *api.Component
+	project       api.Project
+	component     api.Component
 	txtMessage    *tb.Message
 	dlg           *tb.Message
 	docs          []Media
@@ -73,6 +73,8 @@ func (s *CreateBugState) OnExit(act actor.Actor) error {
 	s.voices = nil
 	s.videos = nil
 	s.isEditMessage = false
+	s.project = api.Project{}
+	s.component = api.Component{}
 	return nil
 }
 
@@ -95,14 +97,14 @@ func (s *CreateBugState) OnEnter(act actor.Actor) error {
 		log.Warn("Unknown project")
 		return common.ErrInternal
 	}
-	s.project = ptmp.(*api.Project)
+	s.project = ptmp.(api.Project)
 
 	ctmp, ok := act.Storage().Get("component")
 	if !ok {
 		log.Infof("Unknown component")
 		return common.ErrInternal
 	}
-	s.component = ctmp.(*api.Component)
+	s.component = ctmp.(api.Component)
 
 	s.dlg = nil
 	dtmp, ok := act.Storage().Get("dialog")
@@ -226,7 +228,6 @@ func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.Ret
 	}
 
 	if query == "EDIT" {
-		//return s.showDialog(act)
 		s.isEditMessage = true
 	} else if query == "BACK" {
 		return s.showDialog(act)
@@ -237,7 +238,7 @@ func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.Ret
 	}
 
 	log.Infof("create bug for '%s'/'%s' ", s.project.Name, s.component.Name)
-	txt := fmt.Sprintf("<b>Проект:</b> %s\n<b>Компонент:</b> %s\n\nВведите описание проблемы..", s.project.Name, s.component.Name)
+	txt := fmt.Sprintf("%s\n\n<b>Проект:</b> %s\n<b>Компонент:</b> %s\n\nВведите описание проблемы..", common.TXT_TITLE_CREATE_BUG, s.project.Name, s.component.Name)
 	dlg, err := act.Scope().Bot.Edit(cb.Message, txt, s.NewBackButton(), tb.ModeHTML)
 	if err != nil {
 		log.Infof("Send message error: %s", err)
@@ -328,7 +329,7 @@ func (s *CreateBugState) showDialog(act actor.Actor) (actor.RetCode, error) {
 	if s.txtMessage != nil {
 		desc = s.txtMessage.Text
 	}
-	txt := fmt.Sprintf("<b>Проект:</b> %s\n<b>Компонент:</b> %s\n<b>Описание:</b>\n%s\n", s.project.Name, s.component.Name, desc)
+	txt := fmt.Sprintf("%s\n\n<b>Проект:</b> %s\n<b>Компонент:</b> %s\n<b>Описание:</b>\n%s\n", common.TXT_TITLE_CREATE_BUG, s.project.Name, s.component.Name, desc)
 	if mediaCount(&s.docs) > 0 {
 		txt += fmt.Sprintf("<b>Docs:</b> %d\n", len(s.docs))
 	}

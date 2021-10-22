@@ -17,7 +17,7 @@ import (
 type SelectComponentState struct {
 	actor.DefaultState
 	mainMenu   menu.Menu
-	project    *api.Project
+	project    api.Project
 	components []api.Component
 }
 
@@ -51,7 +51,7 @@ func (s *SelectComponentState) OnEnter(act actor.Actor) error {
 		return common.ErrInternal
 	}
 
-	s.project = ptmp.(*api.Project)
+	s.project = ptmp.(api.Project)
 	return nil
 }
 
@@ -128,7 +128,7 @@ func (s *SelectComponentState) OnCallback(act actor.Actor, cb *tb.Callback) (act
 	for _, p := range clist.Components {
 		blst = append(blst, helpers.BtnItem{p.Name, fmt.Sprintf("%d", p.Id)})
 	}
-	txt := fmt.Sprintf("<b>Проект:</b> %s\nВыберите компонент..", s.project.Name)
+	txt := fmt.Sprintf("%s\n\n<b>Проект:</b> %s\nВыберите компонент..", common.TXT_TITLE_CREATE_BUG, s.project.Name)
 	dlg, err := act.Scope().Bot.Edit(cb.Message, txt, helpers.NewButtonList(blst, beg, pageSize), tb.ModeHTML)
 	if err != nil {
 		log.Warnln("send message error: ", err)
