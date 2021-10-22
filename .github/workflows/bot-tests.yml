@@ -21,4 +21,4 @@ jobs:
       - name: tests
         run: |
             cd bot
-            go test -mod vendor
+            go test -mod vendor ./...
