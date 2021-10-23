@@ -18,7 +18,7 @@ type Media struct {
 	skipped bool
 }
 
-func mediaCount(mlist *[]Media) int {
+func countMedia(mlist *[]Media) int {
 	num := 0
 	for _, m := range *mlist {
 		if !m.skipped {
@@ -135,6 +135,19 @@ func (s *CreateBugState) skipMedia(act actor.Actor, mlist *[]Media, id int) {
 	}
 }
 
+func (s *CreateBugState) skipAllMedia(act actor.Actor, mlist *[]Media) {
+	log := act.Log().WithFields(
+		logrus.Fields{
+			"func":  "skipAllMedia",
+			"state": s.Name(),
+		})
+
+	log.Tracef("skip all media (%d)", len(*mlist))
+	for _, m := range *mlist {
+		s.skipMedia(act, mlist, m.msg.ID)
+	}
+}
+
 func (s *CreateBugState) updateMedia(act actor.Actor, mlist *[]Media, id int) {
 	log := act.Log().WithFields(
 		logrus.Fields{
@@ -214,15 +227,21 @@ func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.Ret
 	if strings.HasPrefix(query, "DEL_") {
 		switch query {
 		case "DEL_DOCS":
-			s.docs = nil
+			log.Tracef("del all docs")
+			s.skipAllMedia(act, &s.docs)
 		case "DEL_PHOTOS":
-			s.photos = nil
+			log.Tracef("del all photos")
+			s.skipAllMedia(act, &s.photos)
+			log.Tracef("[1]Mediacount: %d", countMedia(&s.photos))
 		case "DEL_VIDEOS":
-			s.videos = nil
+			log.Tracef("del all videos")
+			s.skipAllMedia(act, &s.videos)
 		case "DEL_VOICES":
-			s.voices = nil
+			log.Tracef("del all voices")
+			s.skipAllMedia(act, &s.voices)
 		case "DEL_AUDIOS":
-			s.audios = nil
+			log.Tracef("del all audios")
+			s.skipAllMedia(act, &s.audios)
 		}
 		return s.showDialog(act)
 	}
@@ -257,19 +276,19 @@ func (s *CreateBugState) NewConfirmKeyboard() *tb.ReplyMarkup {
 	btnCancel := keyb.Data("Cancel", "CANCEL")
 
 	rows = append(rows, tb.Row{btnEdit})
-	if len(s.docs) > 0 {
+	if num := countMedia(&s.docs); num > 0 {
 		rows = append(rows, tb.Row{keyb.Data("Исключить документы", "DEL_DOCS")})
 	}
-	if len(s.photos) > 0 {
+	if num := countMedia(&s.photos); num > 0 {
 		rows = append(rows, tb.Row{keyb.Data("Исключить фотографии", "DEL_PHOTOS")})
 	}
-	if len(s.videos) > 0 {
+	if num := countMedia(&s.videos); num > 0 {
 		rows = append(rows, tb.Row{keyb.Data("Исключить видео", "DEL_VIDEOS")})
 	}
-	if len(s.audios) > 0 {
+	if num := countMedia(&s.audios); num > 0 {
 		rows = append(rows, tb.Row{keyb.Data("Исключить аудио", "DEL_AUDIOS")})
 	}
-	if len(s.voices) > 0 {
+	if num := countMedia(&s.voices); num > 0 {
 		rows = append(rows, tb.Row{keyb.Data("Исключить голосовые сообщения", "DEL_VOICES")})
 	}
 
@@ -330,20 +349,20 @@ func (s *CreateBugState) showDialog(act actor.Actor) (actor.RetCode, error) {
 		desc = s.txtMessage.Text
 	}
 	txt := fmt.Sprintf("%s\n\n<b>Проект:</b> %s\n<b>Компонент:</b> %s\n<b>Описание:</b>\n%s\n", common.TXT_TITLE_CREATE_BUG, s.project.Name, s.component.Name, desc)
-	if mediaCount(&s.docs) > 0 {
-		txt += fmt.Sprintf("<b>Docs:</b> %d\n", len(s.docs))
+	if num := countMedia(&s.docs); num > 0 {
+		txt += fmt.Sprintf("<b>Docs:</b> %d\n", num)
 	}
-	if mediaCount(&s.photos) > 0 {
-		txt += fmt.Sprintf("<b>Фото:</b> %d\n", len(s.photos))
+	if num := countMedia(&s.photos); num > 0 {
+		txt += fmt.Sprintf("<b>Фото:</b> %d\n", num)
 	}
-	if mediaCount(&s.videos) > 0 {
-		txt += fmt.Sprintf("<b>Видео файлов:</b> %d\n", len(s.videos))
+	if num := countMedia(&s.videos); num > 0 {
+		txt += fmt.Sprintf("<b>Видео файлов:</b> %d\n", num)
 	}
-	if mediaCount(&s.audios) > 0 {
-		txt += fmt.Sprintf("<b>Аудио файлов:</b> %d\n", len(s.audios))
+	if num := countMedia(&s.audios); num > 0 {
+		txt += fmt.Sprintf("<b>Аудио файлов:</b> %d\n", num)
 	}
-	if mediaCount(&s.voices) > 0 {
-		txt += fmt.Sprintf("<b>Голосовых сообщений:</b> %d\n", len(s.voices))
+	if num := countMedia(&s.voices); num > 0 {
+		txt += fmt.Sprintf("<b>Голосовых сообщений:</b> %d\n", num)
 	}
 
 	s.dlg, err = act.Scope().Bot.Send(act.User(), txt, s.NewConfirmKeyboard(), tb.ModeHTML)
