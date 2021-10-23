@@ -3,7 +3,8 @@ package common
 import "fmt"
 
 var (
-	ErrInternal = fmt.Errorf("internal error")
+	ErrInternal     = fmt.Errorf("internal error")
+	ErrBigMediaSize = fmt.Errorf("big media size")
 )
 
 const (
@@ -13,4 +14,6 @@ const (
 	TXT_USER_MAIN_MENU   = "❊❊❊ Menu ❊❊❊"
 	TXT_SHRUG            = "¯\\_(ツ)_/¯"
 	TXT_TITLE_CREATE_BUG = "☎️️"
+	TXT_BIG_FILE_SIZE    = "Слишком большой размер файла. Файл должен быть меньше %d Mb"
+	TXT_TOO_MANY_FILES   = "Разрешено добавлять не более %d файлов"
 )

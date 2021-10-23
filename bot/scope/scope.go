@@ -14,16 +14,23 @@ type Bot interface {
 	Notify(to tb.Recipient, action tb.ChatAction) error
 }
 
-type Scope struct {
-	Log *logrus.Logger
-	Bot Bot
-	Api api.Api
+type Config interface {
+	GetMaxMediaSize() int // in megabytes
+	GetMaxMediaCount() int
 }
 
-func NewScope(bot Bot, api api.Api, log *logrus.Logger) *Scope {
+type Scope struct {
+	Log    *logrus.Logger
+	Bot    Bot
+	Api    api.Api
+	Config Config
+}
+
+func NewScope(bot Bot, api api.Api, conf Config, log *logrus.Logger) *Scope {
 	return &Scope{
-		Log: log,
-		Bot: bot,
-		Api: api,
+		Log:    log,
+		Bot:    bot,
+		Api:    api,
+		Config: conf,
 	}
 }

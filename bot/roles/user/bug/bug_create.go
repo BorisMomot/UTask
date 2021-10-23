@@ -115,6 +115,10 @@ func (s *CreateBugState) OnEnter(act actor.Actor) error {
 	return nil
 }
 
+func (s *CreateBugState) countAllMedia() int {
+	return countMedia(&s.photos) + countMedia(&s.audios) + countMedia(&s.voices) + countMedia(&s.videos) + countMedia(&s.docs)
+}
+
 func (s *CreateBugState) skipMedia(act actor.Actor, mlist *[]Media, id int) {
 	log := act.Log().WithFields(
 		logrus.Fields{
@@ -214,6 +218,12 @@ func (s *CreateBugState) OnCallback(act actor.Actor, cb *tb.Callback) (actor.Ret
 				log.Warn("add button error: ", err)
 				return s.showDialog(act)
 			}
+
+			if s.countAllMedia() >= act.Scope().Config.GetMaxMediaCount() {
+				act.Scope().Bot.Send(act.User(), fmt.Sprintf(common.TXT_TOO_MANY_FILES, act.Scope().Config.GetMaxMediaCount()))
+				return s.showDialog(act)
+			}
+
 			log.Traceln("update message ID", msgID)
 			s.updateMedia(act, &s.audios, msgID)
 			s.updateMedia(act, &s.videos, msgID)
@@ -398,6 +408,14 @@ func (s *CreateBugState) OnMessage(act actor.Actor, msg *tb.Message) (actor.RetC
 	return s.showDialog(act)
 }
 
+func (s *CreateBugState) mediaCheckSize(act actor.Actor, szBytes int) error {
+	if szBytes > act.Scope().Config.GetMaxMediaSize()*1024*1024 {
+		return common.ErrBigMediaSize
+	}
+
+	return nil
+}
+
 func (s *CreateBugState) OnUpload(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
 	log := act.Log().WithFields(
 		logrus.Fields{
@@ -405,34 +423,59 @@ func (s *CreateBugState) OnUpload(act actor.Actor, msg *tb.Message) (actor.RetCo
 			"state": s.Name(),
 		})
 
-	log.Trace("on upload")
+	log.Tracef("on upload (count=%d)", s.countAllMedia())
+	if s.countAllMedia() >= act.Scope().Config.GetMaxMediaCount() {
+		act.Scope().Bot.Reply(msg, fmt.Sprintf(common.TXT_TOO_MANY_FILES, act.Scope().Config.GetMaxMediaCount()))
+		return s.showDialog(act)
+	}
+
 	media := Media{msg, nil, false}
 	if msg.Photo != nil {
 		log.Trace("on photo: ", msg.Photo.Caption)
+		if err := s.mediaCheckSize(act, msg.Photo.FileSize); err != nil {
+			act.Scope().Bot.Reply(msg, fmt.Sprintf(common.TXT_BIG_FILE_SIZE, act.Scope().Config.GetMaxMediaSize()))
+			return actor.RetProcessedOk, nil
+		}
 		s.photos = append(s.photos, media)
 		s.updateMedia(act, &s.photos, msg.ID)
 		act.Scope().Bot.Send(msg.Sender, "♨ updated..")
 	}
 	if msg.Audio != nil {
 		log.Trace("on audio: ", msg.Audio.Caption)
+		if err := s.mediaCheckSize(act, msg.Audio.FileSize); err != nil {
+			act.Scope().Bot.Reply(msg, fmt.Sprintf(common.TXT_BIG_FILE_SIZE, act.Scope().Config.GetMaxMediaSize()))
+			return actor.RetProcessedOk, nil
+		}
 		s.audios = append(s.audios, media)
 		s.updateMedia(act, &s.audios, msg.ID)
 		act.Scope().Bot.Send(msg.Sender, "♨ updated..")
 	}
 	if msg.Video != nil {
 		log.Trace("on video: ", msg)
+		if err := s.mediaCheckSize(act, msg.Video.FileSize); err != nil {
+			act.Scope().Bot.Reply(msg, fmt.Sprintf(common.TXT_BIG_FILE_SIZE, act.Scope().Config.GetMaxMediaSize()))
+			return actor.RetProcessedOk, nil
+		}
 		s.videos = append(s.videos, media)
 		s.updateMedia(act, &s.videos, msg.ID)
 		act.Scope().Bot.Send(msg.Sender, "♨ updated..")
 	}
 	if msg.Voice != nil {
 		log.Trace("on voice: ", msg.Voice.Caption)
+		if err := s.mediaCheckSize(act, msg.Voice.FileSize); err != nil {
+			act.Scope().Bot.Reply(msg, fmt.Sprintf(common.TXT_BIG_FILE_SIZE, act.Scope().Config.GetMaxMediaSize()))
+			return actor.RetProcessedOk, nil
+		}
 		s.voices = append(s.voices, media)
 		s.updateMedia(act, &s.voices, msg.ID)
 		act.Scope().Bot.Send(msg.Sender, "♨ updated..")
 	}
 	if msg.Document != nil {
 		log.Trace("on document: ", msg.Document.Caption)
+		if err := s.mediaCheckSize(act, msg.Document.FileSize); err != nil {
+			act.Scope().Bot.Reply(msg, fmt.Sprintf(common.TXT_BIG_FILE_SIZE, act.Scope().Config.GetMaxMediaSize()))
+			return actor.RetProcessedOk, nil
+		}
 		s.docs = append(s.docs, media)
 		s.updateMedia(act, &s.docs, msg.ID)
 		act.Scope().Bot.Send(msg.Sender, "♨ updated..")

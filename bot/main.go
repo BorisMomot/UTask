@@ -126,7 +126,8 @@ func main() {
 		srvApi = api.NewHttpApi(addr)
 	}
 
-	scope := scope.NewScope(bot, srvApi, log)
+	conf := NewUConfig()
+	scope := scope.NewScope(bot, srvApi, conf, log)
 	sess := session.NewSessionManager(scope)
 	fsm := actor.NewFSM(scope)
 

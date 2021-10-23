@@ -9,6 +9,26 @@ import (
 )
 
 // ------------------------------
+type FakeConfig struct {
+	MaxMediaSize  int
+	MaxMediaCount int
+}
+
+func NewFakeConfig() *FakeConfig {
+	return &FakeConfig{
+		MaxMediaSize:  1,
+		MaxMediaCount: 5,
+	}
+}
+
+func (c *FakeConfig) GetMaxMediaSize() int {
+	return 1
+}
+func (c *FakeConfig) GetMaxMediaCount() int {
+	return 3
+}
+
+// ------------------------------
 type FakeMainMenu struct{}
 
 func (m *FakeMainMenu) Activate(act actor.Actor, txt string, options ...interface{}) (actor.RetCode, error) {
@@ -86,7 +106,8 @@ func NewTestEnviroument() *TestEnviroument {
 	menu := NewFakeMenu()
 	bot := NewFakeBot()
 	api := api.NewFakeApi()
-	scope := scope.NewScope(bot, api, log)
+	conf := NewFakeConfig()
+	scope := scope.NewScope(bot, api, conf, log)
 	user := NewFakeUser()
 	msg := &tb.Message{ID: 100}
 	return &TestEnviroument{
