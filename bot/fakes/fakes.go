@@ -29,9 +29,16 @@ func (c *FakeConfig) GetMaxMediaCount() int {
 }
 
 // ------------------------------
-type FakeMainMenu struct{}
+type FakeMainMenu struct{
+	Activated bool
+}
+
+func (m *FakeMainMenu) Name() string {
+	return "FakeMainMenu"
+}
 
 func (m *FakeMainMenu) Activate(act actor.Actor, txt string, options ...interface{}) (actor.RetCode, error) {
+	m.Activated = true
 	return actor.RetProcessedOk, nil
 }
 func NewFakeMenu() *FakeMainMenu {
