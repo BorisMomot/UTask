@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# place binaries and libraries according to GNU standards
+# Place binaries and libraries according to GNU standards
 include(GNUInstallDirs)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
@@ -41,7 +41,7 @@ if(NOT json_POPULATED)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-# link pistache
+# Link pistache
 include(FetchContent)
 set(FETCHCONTENT_QUIET off)
 get_filename_component(fc_base "../fc_base" REALPATH BASE_DIR "${CMAKE_BINARY_DIR}")
@@ -53,8 +53,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pistache)
 
-
-
+# Link libcurl
+include(FindPkgConfig)
+pkg_check_modules(CURL libcurl REQUIRED)
 
 add_subdirectory(src)
 enable_testing()
