@@ -15,6 +15,12 @@
 #include "pistache/router.h"
 #include "UserApiImpl.h"
 
+#include "user.h"
+#include "task.h"
+#include "role.h"
+#include "project.h"
+#include "filter.h"
+
 using namespace io::swagger::server::api;
 
 int main() {

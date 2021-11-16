@@ -1,6 +1,6 @@
 add_subdirectory(pistache_server)
 add_subdirectory(core)
-add_subdirectory(infrastructure)
+add_subdirectory(repository)
 #######################################################################################################
 # Test
 #######################################################################################################
@@ -12,3 +12,4 @@ target_include_directories(testlib PUBLIC ${CMAKE_CURRENT_LIST_DIR} PUBLIC ${PRO
 target_compile_options(testlib PUBLIC "--coverage")
 target_link_options(testlib INTERFACE "--coverage" )
 target_link_libraries(testlib logger)
+

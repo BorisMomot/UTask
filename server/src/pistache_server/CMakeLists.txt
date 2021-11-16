@@ -26,8 +26,8 @@ UserApiMainServer.cpp
 add_executable(user_api_server
 ${USER_API_SERVER_SOURCES})
 
-target_link_libraries(user_api_server pistache pthread  nlohmann_json::nlohmann_json)
-target_include_directories(user_api_server PUBLIC RapidJSON )
+target_link_libraries(user_api_server pistache pthread  nlohmann_json::nlohmann_json  )
+target_include_directories(user_api_server PUBLIC RapidJSON PUBLIC ${PROJECT_SOURCE_DIR}/src/core )
 
 #------------------------------------------------------------------------------------------------
 #
