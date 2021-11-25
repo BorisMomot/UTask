@@ -9,20 +9,6 @@
 #include <vector>
 #include <map>
 
-//  /// Получить команду для создания
-//  virtual std::string getCreateCommand(){
-//    std::ostringstream command;
-//
-//    command << "CREATE TABLE " << tableName << " (";
-//    for (const auto& p:columnsProperties){
-//      command << " " <<  p.first << " ";
-//      for (const auto& s: p.second){
-//        command << " " << s;
-//      }
-//    }
-//    return command.str();
-//  }
-
 /// @brief Класс отвечает за хранение информации о таблице в базе данных
 /// При создании объекта необходимо передать в конструктор имя таблицы и все поля настройки
 /// Для удобства создания был введен класс упрощающий процесс создания

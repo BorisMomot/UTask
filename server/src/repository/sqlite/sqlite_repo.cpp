@@ -49,46 +49,55 @@ std::list<Task> SQLiteRepo::getTasks() { return std::list<Task>(); }
 SQLiteRepo::SQLiteRepo(const std::string &dbAddress) {
   manager = new SQLiteManager("test.db");
 
-  // Проверяем нужно ли пересоздавать таблицы
-  // если нужно - пересоздаем
-
-  auto getCreateCommand = [](TableInfo& tableInfo){
-    std::ostringstream command;
-    command << "CREATE TABLE " << tableInfo.getTableName() << " (";
-    for (const auto& p:tableInfo.getColumsProperties()){
-      command << " " <<  p.first << " ";
-      for (const auto& s: p.second){
-        command << " " << s;
-      }
-    }
-    return command.str();
-  };
-
+}
+//------------------------------------------------------------------------------
+bool SQLiteRepo::createProjectTable() {
   TableInfoSQLiteFactory tableInfoSqLiteFactory;
-
-  // create tables roles
-  auto rolesTableInfo = tableInfoSqLiteFactory.createRoleTable();
-  auto rolesCreateCommand = getCreateCommand(rolesTableInfo);
-  manager->executeQuery(rolesCreateCommand);
-
-  // create tables projects
   auto projectTableInfo = tableInfoSqLiteFactory.createProjectTable();
-  auto projectCreateCommand = getCreateCommand(projectTableInfo);
-  manager->executeQuery(projectCreateCommand);
-
-  // create tables tasks
+  return createTableCommand(projectTableInfo);
+}
+bool SQLiteRepo::createRoleTable() {
+  TableInfoSQLiteFactory tableInfoSqLiteFactory;
+  auto roleTableInfo = tableInfoSqLiteFactory.createRoleTable();
+  return createTableCommand(roleTableInfo);
+}
+bool SQLiteRepo::createTaskTable() {
+  TableInfoSQLiteFactory tableInfoSqLiteFactory;
   auto taskTableInfo = tableInfoSqLiteFactory.createTaskTable();
-  auto taskCreateCommand = getCreateCommand(taskTableInfo);
-  manager->executeQuery(taskCreateCommand);
-
-  // create tables users
+  return createTableCommand(taskTableInfo);
+}
+bool SQLiteRepo::createUserTable() {
+  TableInfoSQLiteFactory tableInfoSqLiteFactory;
   auto userTableInfo = tableInfoSqLiteFactory.createUserTable();
-  auto userCreateCommand = getCreateCommand(userTableInfo);
-  manager->executeQuery(userCreateCommand);
-
-  // create tables usersRoles
+  return createTableCommand(userTableInfo);
+}
+bool SQLiteRepo::createUserRolesTable() {
+  TableInfoSQLiteFactory tableInfoSqLiteFactory;
   auto userRolesTableInfo = tableInfoSqLiteFactory.createUsersRoles();
-  auto userRolesCreateCommand = getCreateCommand(userRolesTableInfo);
-  manager->executeQuery(userRolesCreateCommand);
+  return createTableCommand(userRolesTableInfo);
+}
 
+//------------------------------------------------------------------------------
+bool SQLiteRepo::projectTableExist() { return false; }
+bool SQLiteRepo::roleTableExist() { return false; }
+bool SQLiteRepo::taskTableExist() { return false; }
+bool SQLiteRepo::userTableExist() { return false; }
+bool SQLiteRepo::userRolesTableExist() { return false; }
+
+
+bool SQLiteRepo::createTableCommand(TableInfo &tableInfo) {
+  std::ostringstream command;
+  command << "CREATE TABLE " << tableInfo.getTableName() << " (";
+  for (const auto& p:tableInfo.getColumsProperties()){
+    command << " " <<  p.first << " ";
+    for (const auto& s: p.second){
+      command << " " << s;
+    }
+  }
+  try {
+    manager->executeQuery(command.str());
+  } catch (...) {
+    return false;
+  }
+  return true;
 }

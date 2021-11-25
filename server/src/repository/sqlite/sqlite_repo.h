@@ -50,6 +50,21 @@ public:
   std::list<Task> getTasks();
 
   virtual ~SQLiteRepo();
+
+protected:
+  bool createProjectTable() override;
+  bool createRoleTable() override;
+  bool createTaskTable() override;
+  bool createUserTable() override;
+  bool createUserRolesTable() override;
+  bool projectTableExist() override;
+  bool roleTableExist() override;
+  bool taskTableExist() override;
+  bool userTableExist() override;
+  bool userRolesTableExist() override;
+
+private:
+  bool createTableCommand(TableInfo& tableInfo);
 };
 
 
