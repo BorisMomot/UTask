@@ -9,11 +9,30 @@
 #include <vector>
 #include <map>
 
+//  /// Получить команду для создания
+//  virtual std::string getCreateCommand(){
+//    std::ostringstream command;
+//
+//    command << "CREATE TABLE " << tableName << " (";
+//    for (const auto& p:columnsProperties){
+//      command << " " <<  p.first << " ";
+//      for (const auto& s: p.second){
+//        command << " " << s;
+//      }
+//    }
+//    return command.str();
+//  }
+
+/// @brief Класс отвечает за хранение информации о таблице в базе данных
+/// При создании объекта необходимо передать в конструктор имя таблицы и все поля настройки
+/// Для удобства создания был введен класс упрощающий процесс создания
 class TableInfo{
 public:
   typedef std::vector<std::string> properties;
 
-  std::string getCreateCommand();
+  /// Получить имя таблицы
+  const std::string &getTableName() const { return tableName; }
+  /// Получить имена колонок
   std::vector<std::string> getColumsNames(){
     std::vector<std::string> columns;
     for (const auto& c: columnsProperties){
@@ -21,33 +40,36 @@ public:
     }
     return columns;
   }
-  const std::string &getTableName() const { return tableName; }
+  /// Получить имена столбцов и их свойства
   const std::map<std::string, properties> &getColumsProperties() const {
     return columnsProperties;
   }
-    bool isValid(){
+  /// Проверка, что поля заданы корректно
+  bool isValid(){
     if (!tableName.empty() && !columnsProperties.empty()){
       return true;
     } else {
       return false;
     }
   }
+
   TableInfo(const std::string &tableName,
-            const std::map<std::string, properties> &columnsProperties);
+            const std::map<std::string, properties> &columnsProperties): tableName(tableName), columnsProperties(columnsProperties){}
 
 private:
   const std::string tableName;
   const std::map<std::string, properties> columnsProperties;
 };
 
-class TableInfoCreator{
+/// Вспомогательный класс для создания таблиц
+class TableInfoBuilder {
   std::string tableName="";
   std::map<std::string, TableInfo::properties> columnsProperties{};
 
 public:
-  TableInfoCreator() {}
+  TableInfoBuilder() {}
   void setTableName(const std::string &tableName) {
-    TableInfoCreator::tableName = tableName;
+    TableInfoBuilder::tableName = tableName;
   }
 
   void addColumn(const std::string& columnName, TableInfo::properties properties){
@@ -59,10 +81,5 @@ public:
     return TableInfo(tableName, columnsProperties);
   }
 };
-
-
-
-
-
 
 #endif // GTEST_DEMO_TABLE_INFO_H
