@@ -1,7 +1,7 @@
 //
 // Created by boris on 25.11.2021.
 //
-
+#include <sstream>
 #include "sqlite_manager.h"
 void SQLiteManager::init() {
   // Init connection
@@ -35,7 +35,10 @@ std::vector<DBManager::tableRow> SQLiteManager::executeQuery(std::string query) 
   auto rc = sqlite3_exec(db, query.c_str(), callback_l , (void*)&result, &errorMsg);
   if ( rc != SQLITE_OK) {
     std::cerr << "Error: " << errorMsg << std::endl;
+    std::stringstream ss;
+    ss << errorMsg;
     sqlite3_free(errorMsg);
+    throw (ss.str());
   } else {
     std::cout << "[SUCCESS] Execute:" << query << std::endl;
   }

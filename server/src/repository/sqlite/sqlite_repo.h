@@ -11,8 +11,9 @@
 #include <list>
 #include <map>
 #include <functional>
+#include <memory>
 
-#include <repo.h>
+#include "repo.h"
 
 #include "filter.h"
 #include "project.h"
@@ -24,14 +25,22 @@
 #include "sqlite_manager.h"
 
 class SQLiteRepo: public Repo {
-  SQLiteManager* manager;
-public:
-  SQLiteRepo(const std::string &dbAddress);
+  DBManager& manager;
+  TableInfoSQLiteFactory tableInfoSqLiteFactory;
 
-  bool saveProjectData(const Project role);
+  TableInfo projectTableInfo;
+  TableInfo roleTableInfo;
+  TableInfo taskTableInfo;
+  TableInfo userTableInfo;
+  TableInfo userRolesTableInfo;
+
+public:
+  SQLiteRepo( DBManager& dbManager);
+
+  bool saveProjectData(const Project project);
   bool saveRoleData(const Role role);
   bool saveUserData(const User user);
-  bool saveTaskData(const Project project);
+  bool saveTaskData(const Project task);
 
   std::list<Project> getProjects(const Filter& filter );
   std::list<Project> getProjects(const std::string filterField, const std::string FliterValue);
@@ -63,7 +72,11 @@ protected:
   bool userTableExist() override;
   bool userRolesTableExist() override;
 
+public:
+  bool init() override;
+
 private:
+  bool checkTableExist(const std::string& tableName);
   bool createTableCommand(TableInfo& tableInfo);
 };
 

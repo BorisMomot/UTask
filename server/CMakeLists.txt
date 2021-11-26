@@ -59,4 +59,4 @@ find_package(Threads REQUIRED)
 
 add_subdirectory(src)
 enable_testing()
-add_subdirectory(test)
+#add_subdirectory(test)

@@ -41,22 +41,6 @@ public:
   virtual std::list<Task> getTasks(const std::string filterField, const std::string FliterValue) = 0;
   virtual std::list<Task> getTasks() = 0;
 
-protected:
-
-  // Create tables
-  virtual bool createProjectTable() = 0;
-  virtual bool createRoleTable() = 0;
-  virtual bool createTaskTable() = 0;
-  virtual bool createUserTable() = 0;
-  virtual bool createUserRolesTable() = 0;
-
-  // Check that tables needed to work exists
-  virtual bool projectTableExist() = 0;
-  virtual bool roleTableExist() = 0;
-  virtual bool taskTableExist() = 0;
-  virtual bool userTableExist() = 0;
-  virtual bool userRolesTableExist() = 0;
-
   // Prepare to work
   virtual bool init(){
     // project
@@ -79,7 +63,25 @@ protected:
     if (!userRolesTableExist()){
       createUserRolesTable();
     }
+    return true; // todo - return normal value
   }
+protected:
+
+  // Create tables
+  virtual bool createProjectTable() = 0;
+  virtual bool createRoleTable() = 0;
+  virtual bool createTaskTable() = 0;
+  virtual bool createUserTable() = 0;
+  virtual bool createUserRolesTable() = 0;
+
+  // Check that tables needed to work exists
+  virtual bool projectTableExist() = 0;
+  virtual bool roleTableExist() = 0;
+  virtual bool taskTableExist() = 0;
+  virtual bool userTableExist() = 0;
+  virtual bool userRolesTableExist() = 0;
+
+
 
 };
 
