@@ -9,14 +9,14 @@
 #include <vector>
 
 class User {
-  const uint64_t id;
-  const std::string userName;
-  const std::string firstName;
-  const std::string lastName;
-  const std::string email;
-  const std::string phone;
-  const uint32_t userStatus;
-  const std::vector<uint64_t> userRoles;
+  uint64_t id;
+  std::string userName;
+  std::string firstName;
+  std::string lastName;
+  std::string email;
+  std::string phone;
+  uint32_t userStatus;
+  std::vector<uint64_t> userRoles;
 
 public:
   User(const uint64_t id, const std::string &userName,
@@ -48,9 +48,7 @@ class UserBuilder{
   std::vector<uint64_t> userRoles{};
 
 public:
-  User buildUser(){
-    return User(id, userName, firstName, lastName, email, phone, userStatus, userRoles);
-  }
+  User buildUser();
 
   void setId(uint64_t id) { UserBuilder::id = id; }
   void setUserName(const std::string &userName) {

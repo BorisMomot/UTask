@@ -7,12 +7,14 @@
 #include <string>
 
 class Filter{
-  const std::string filterField;
-  const std::string filterValue;
+  std::string filterField;
+  std::string filterValue;
 
 public:
   Filter(const std::string &filterField, const std::string &filterValue)
       : filterField(filterField), filterValue(filterValue) {}
+  const std::string &getFilterField() const;
+  const std::string &getFilterValue() const;
 };
 
 

@@ -9,14 +9,14 @@
 #include <string>
 
 class Task {
-  const uint64_t id;
-  const uint64_t priority;
-  const std::string name;
-  const std::string status;
-  const uint64_t userCreator;
-  const uint64_t  userExecutor;
-  const std::string description;
-  const std::string stored;
+  uint64_t id;
+  uint64_t priority;
+  std::string name;
+  std::string status;
+  uint64_t userCreator;
+  uint64_t  userExecutor;
+  std::string description;
+  std::string stored;
 
 public:
   Task(const uint64_t id, const uint64_t priority, const std::string &name,
@@ -48,9 +48,7 @@ class TaskBuilder{
   std::string stored;
 
 public:
-  Task buildTask(){
-    return Task(id, priority, name, status, userCreator, userExecutor, description, stored);
-  }
+  Task buildTask();
   void setId(uint64_t id) { TaskBuilder::id = id; }
   void setPriority(uint64_t priority) { TaskBuilder::priority = priority; }
   void setName(const std::string &name) { TaskBuilder::name = name; }

@@ -9,14 +9,13 @@
 #include <string>
 
 class Role{
-  const uint64_t id;
-  const std::string name;
-  const std::string description;
+  uint64_t id;
+  std::string name;
+  std::string description;
 
 public:
   Role(const uint64_t id, const std::string &name,
-       const std::string &description)
-      : id(id), name(name), description(description) {}
+       const std::string &description);
   const uint64_t getId() const { return id; }
   const std::string &getName() const { return name; }
   const std::string &getDescription() const { return description; }
