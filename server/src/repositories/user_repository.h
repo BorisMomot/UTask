@@ -25,6 +25,7 @@ public:
 };
 
 class UserRepository: public RepositoryInterface, public UserRepositoryInterface {
+public:
   bool addUser(const User &user) override;
   const User &findById(uint id) override;
   bool updateUser(uint id, const User &user) override;

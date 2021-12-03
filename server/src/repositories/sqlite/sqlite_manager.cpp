@@ -3,7 +3,7 @@
 //
 #include <sstream>
 #include "sqlite_manager.h"
-void SQLiteManager::init() {
+bool SQLiteManager::init() {
   // Init connection
   auto rc = sqlite3_open(db_address_.c_str(), &db);
   if (rc){
@@ -11,19 +11,20 @@ void SQLiteManager::init() {
   } else {
     std::cout << "Open successfully" << std::endl;
   }
+  return true;
 }
 //--------------------------------------------------------------------------v
 SQLiteManager::SQLiteManager(const std::string db_address) {
   init();
 }
 //--------------------------------------------------------------------------
-std::vector<DBManager::tableRow> SQLiteManager::executeQuery(std::string query) {
-  std::vector<tableRow> result;
+std::vector<std::vector<std::string>> SQLiteManager::getDataFromQuery(const std::string& query) {
+  std::vector<std::vector<std::string>> result;
   // Execute SQL query
   char *errorMsg = 0;
   auto callback_l = [](void* data, int argc, char** argv, char** azColName) -> int {
-    auto res = reinterpret_cast<std::vector<SQLiteManager::tableRow>&> (data);
-    SQLiteManager::tableRow row;
+    auto res = reinterpret_cast<std::vector<std::vector<std::string>>&> (data);
+    std::vector<std::string> row;
     for(int i=0; i < argc; ++i){
 //        std::cout << azColName[i] << " = " << (argv[i] ? argv[i]: "NULL") << std::endl;
       row.emplace_back((argv[i] ? argv[i]: "NULL"));
@@ -48,3 +49,6 @@ std::vector<DBManager::tableRow> SQLiteManager::executeQuery(std::string query) 
 SQLiteManager::~SQLiteManager() {
   sqlite3_close(db);
 }
+
+bool SQLiteManager::executeQuery(const std::string &query) { return false; }
+

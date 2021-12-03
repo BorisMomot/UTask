@@ -2,13 +2,15 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(SQLite REQUIRED IMPORTED_TARGET sqlite3)
 
 add_library(sqlite_repo
-        sqlite_repo.h sqlite_repo.cpp
+        sqlite_manager.h sqlite_manager.cpp
         user_sqlite_helper.h user_sqlite_helper.cc
         table_info.h table_info.cpp table_info_creator.h
 )
 
 target_include_directories(sqlite_repo
         PRIVATE ${PROJECT_SOURCE_DIR}/include/domain/domain_model/
+        PRIVATE ${PROJECT_SOURCE_DIR}/include/domain/domain_repository_interface/
+        PRIVATE ${PROJECT_SOURCE_DIR}/include/repositories/
         PRIVATE ${PROJECT_SOURCE_DIR}/src/entities
 )
 

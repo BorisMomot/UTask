@@ -9,9 +9,6 @@ set(BUILD_GMOCK ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(gtest)
 
 
-
-
-
 add_executable(
         unit_tests
         testlib_add.cc
@@ -34,3 +31,4 @@ gtest_discover_tests(unit_tests
         )
 
 add_subdirectory(domain)
+add_subdirectory(repositories)

@@ -8,6 +8,7 @@
 #include <user.h>
 
 class UserRepositoryInterface{
+public:
   virtual bool addUser(const User& user) = 0;
   virtual const User& findById(uint id) = 0;
   virtual bool updateUser(uint id, const User& user) = 0;

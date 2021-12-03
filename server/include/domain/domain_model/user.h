@@ -19,6 +19,10 @@ class User {
   std::vector<uint64_t> userRoles;
 
 public:
+  bool operator==(const User &rhs) const;
+  bool operator!=(const User &rhs) const;
+
+public:
   User(const uint64_t id, const std::string &userName,
        const std::string &firstName, const std::string &lastName,
        const std::string &email, const std::string &phone,

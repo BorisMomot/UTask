@@ -8,10 +8,13 @@
 #include <string>
 #include <user.h>
 
+
+
+
 class UserSqliteHelper {
 public:
   // Check that user table exist
-  static std::string chackUserTableExist();
+  static std::string checkUserTableExist();
   // Create command for userTable creation
   static std::string createUserTableCommand();
   // Add user command
