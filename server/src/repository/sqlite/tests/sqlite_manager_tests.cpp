@@ -7,24 +7,79 @@
 
 using ::testing::AtLeast;
 
-class MockDBManager: public DBManager{
+namespace testing{
+  class MockDBManager: public DBManager{
+  public:
+    MOCK_METHOD(std::vector<tableRow>, executeQuery, (std::string query), (override));
+  };
+}
+
+// Testing Google test
+//______________________________________________________________________________
+namespace testing{
+class Interface{
 public:
-  MOCK_METHOD(std::vector<tableRow>, executeQuery, (std::string query), (override));
+  virtual int getSomeNumber(std::string in) = 0;
 };
 
+class MockClass: public Interface{
+public:
+  MOCK_METHOD(int, getSomeNumber, (std::string in), (override));
+};
 
-TEST(sqlite_repo, create) {
-  MockDBManager dbManager;
+class UserImpl{
+  Interface& interface_;
+public:
+  UserImpl(Interface& interface): interface_(interface){}
+  int doWork(){
+    const auto res = interface_.getSomeNumber("42") +2;
+    if (res == 4) {
+      std::cout << "Result 4" << std::endl;
+    } else {
+      std::cout << "Result: " << res << std::endl;
+    }
+
+    return res + 2;
+  }
+};
+
+}
+
+TEST(test_for_tes, first){
+  testing::MockClass mockClass;
+  testing::UserImpl user(mockClass);
+
+  EXPECT_CALL(mockClass, getSomeNumber("42")) // проверяем, что метод был вызван с параметром 42
+      .Times(AtLeast(2)) // проверяем что минимум два раза
+      .WillOnce(testing::Return(2)) // первый раз метод возвращает 2
+      .WillOnce(testing::Return(3)) // второй раз метод возвращает 3
+      .WillRepeatedly(testing::Return(5)); // все последующие 5
+  user.doWork();
+  user.doWork();
+  user.doWork();
+}
+
+// Testing Google test
+//______________________________________________________________________________
+
+
+
+
+
+TEST(sqlite_repo, initTables) {
+  testing::MockDBManager dbManager;
   SQLiteRepo sqLiteRepo(dbManager);
+
+
+
+  // Expect: 4 time call
+  //  CREATE TABLE ROLES ( ID INT PRIMARY KEY NOT NULL NAME  TEXT DESCRIPTION  TEXT);
+  EXPECT_CALL(dbManager, executeQuery)
+      .Times(AtLeast(4));
   sqLiteRepo.init();
-  Project project(1, "test", "test only");
-//  sqLiteRepo.saveProjectData(project);
 
-  EXPECT_CALL(dbManager, executeQuery)                  // #3
-      .Times(AtLeast(1))
-      .WillRepeatedly(testing::Return(dbManager.executeQuery("CREATE TABLE ROLES ( DESCRIPTION  TEXT ID  INT PRIMARY KEY NOT NULL NAME  TEXT")))
-;
-
+//  Project project(2, "232", "test");
+//  sqLiteRepo.saveProjectData(std::move(project));
 }
 
 TEST(testlib, substract) {
