@@ -8,9 +8,6 @@
 #include <string>
 #include <user.h>
 
-
-
-
 class UserSqliteHelper {
 public:
   // Check that user table exist

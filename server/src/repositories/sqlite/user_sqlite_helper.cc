@@ -5,8 +5,7 @@
 #include "user_sqlite_helper.h"
 
 //CREATE table USERS
-//    (
-//     USERNAME TEXT,
+//    (USERNAME TEXT,
 //     FIRSTNAME TEXT,
 //     LASTNAME TEXT,
 //     EMAIL TEXT,
