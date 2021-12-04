@@ -9,9 +9,10 @@
 #include <db_manager_interface.h>
 #include <repository_interface.h>
 #include <user_repository_interface.h>
-
-
-
+/**
+ * \brief Exception class to mark that user doesn't found
+ * Return userid that doesn't found
+ */
 class UserNotFound: public std::exception{
   uint userId;
 public:
@@ -24,6 +25,10 @@ public:
   }
 };
 
+/**
+ * \brief Realisation of userRepository interface
+ * Basic CRUD for SQLite
+ */
 class UserRepository: public RepositoryInterface, public UserRepositoryInterface {
 public:
   bool addUser(const User &user) override;

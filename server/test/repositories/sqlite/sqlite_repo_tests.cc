@@ -21,7 +21,7 @@ TEST(user_sqlite_helper, create_table) {
 //INSERT INTO USERS (USERNAME, FIRSTNAME, LASTNAME, EMAIL, PHONE, USERSTATUS)
 //    VALUES('tom', 'tom', 'mot', 'd@mail', 345, 1 );
 TEST(user_sqlite_helper, add_user) {
-  std::string addUser("INSERT INTO USERS (USERNAME, FIRSTNAME, LASTNAME, EMAIL, PHONE, USERSTATUS) VALUES('tom', 'Jerry', 'Mot', 'd@mail', 345, 1 ); ");
+  std::string addUser("INSERT INTO USERS (USERNAME, FIRSTNAME, LASTNAME, EMAIL, PHONE, USERSTATUS) VALUES('tom', 'Jerry', 'Mot', 'd@mail', 345, 1 );");
   UserBuilder ub;
   ub.setUserName("tom");
   ub.setFirstName("Jerry");
@@ -49,6 +49,7 @@ TEST(user_sqlite_helper, update_user) {
   ub.setFirstName("Fill");
   ub.setLastName("BOB");
   ub.setPhone("789");
+  ub.setEmail("p@mail");
   ub.setUserStatus(2);
   auto user = ub.buildUser();
   uint id = 3;
