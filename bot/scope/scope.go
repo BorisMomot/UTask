@@ -6,16 +6,31 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-type Scope struct {
-	Log *logrus.Logger
-	Bot *tb.Bot
-	Api api.Api
+type Bot interface {
+	Reply(msg *tb.Message, what interface{}, options ...interface{}) (*tb.Message, error)
+	Edit(msg tb.Editable, what interface{}, options ...interface{}) (*tb.Message, error)
+	Send(to tb.Recipient, what interface{}, options ...interface{}) (*tb.Message, error)
+	Respond(c *tb.Callback, resp ...*tb.CallbackResponse) error
+	Notify(to tb.Recipient, action tb.ChatAction) error
 }
 
-func NewScope(bot *tb.Bot, api api.Api, log *logrus.Logger) *Scope {
+type Config interface {
+	GetMaxMediaSize() int // in megabytes
+	GetMaxMediaCount() int
+}
+
+type Scope struct {
+	Log    *logrus.Logger
+	Bot    Bot
+	Api    api.Api
+	Config Config
+}
+
+func NewScope(bot Bot, api api.Api, conf Config, log *logrus.Logger) *Scope {
 	return &Scope{
-		Log: log,
-		Bot: bot,
-		Api: api,
+		Log:    log,
+		Bot:    bot,
+		Api:    api,
+		Config: conf,
 	}
 }

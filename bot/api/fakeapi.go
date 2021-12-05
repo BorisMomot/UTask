@@ -8,7 +8,7 @@ import (
 type FakeApi struct {
 }
 
-func NewFakeApi() Api {
+func NewFakeApi() *FakeApi {
 	return &FakeApi{}
 }
 

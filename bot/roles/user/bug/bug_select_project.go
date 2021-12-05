@@ -1,4 +1,4 @@
-package user
+package bug
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"github.com/BorisMomot/UTask/bot/actor"
 	"github.com/BorisMomot/UTask/bot/api"
 	"github.com/BorisMomot/UTask/bot/helpers"
+	"github.com/BorisMomot/UTask/bot/menu"
+	"github.com/BorisMomot/UTask/bot/roles/user/common"
 	"github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"strconv"
@@ -14,27 +16,33 @@ import (
 
 type SelectProjectState struct {
 	actor.DefaultState
+	mainMenu menu.Menu
+	projects []api.Project
 }
 
 func (s *SelectProjectState) Name() string {
 	return "SelectProjectState"
 }
 
-func NewSelectProjectState() actor.State {
-	return &SelectProjectState{}
+func NewSelectProjectState(mainMenu menu.Menu) *SelectProjectState {
+	return &SelectProjectState{
+		mainMenu: mainMenu,
+	}
 }
 
 func (s *SelectProjectState) OnStart(act actor.Actor, msg *tb.Message) (actor.RetCode, error) {
-	return toBegin(s, act, msg.Sender, txt_CANCALLED)
+	return s.mainMenu.Activate(act, common.TXT_CANCELLED)
 }
 
 func (s *SelectProjectState) OnEnter(act actor.Actor) error {
 	act.Storage().Delete("projects")
+	s.projects = make([]api.Project, 0)
 	return nil
 }
 
 func (s *SelectProjectState) OnExit(act actor.Actor) error {
 	act.Storage().Delete("projects")
+	s.projects = nil
 	return nil
 }
 
@@ -47,7 +55,8 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 
 	query := strings.TrimSpace(cb.Data)
 	beg := 0
-	pageSize := defaultPageSize
+	pageSize := common.DEFAULT_PAGE_SIZE
+	cb.Data = ""
 
 	tmp := strings.Split(query, ";")
 	if len(tmp) > 2 {
@@ -61,41 +70,35 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 	if query == "UNUSED" {
 		return actor.RetProcessedOk, nil
 	} else if query == "BACK" {
-		return toBegin(s, act, cb.Message.Sender, txt_CANCALLED)
+		return s.mainMenu.Activate(act, common.TXT_CANCELLED)
 	} else if query == "NEXT" {
 
 	} else if query == "PREV" {
 		beg = beg - pageSize
 	} else if len(query) > 0 {
 		log.Infof("select project ID=%s", query)
-		projects, ok := act.Storage().Get("projects")
-		if !ok {
-			log.Warn("not found projects list")
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
-		}
-
 		id, err := strconv.Atoi(query)
 		if err != nil {
 			log.Warn("Convert project ID error: ", err)
-			return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
+			return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 		}
 
-		prj, ok := api.FindProjectById(projects.([]api.Project), int64(id))
+		prj, ok := api.FindProjectById(s.projects, int64(id))
 		if !ok {
 			log.Warn("not found project ", query)
-			return toBegin(s, act, cb.Sender, "")
+			return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 		}
 
-		cb.Data = ""
 		act.Storage().Set("project", prj)
-		act.ToState(NewSelectComponentState())
+		act.ToState(NewSelectComponentState(s.mainMenu))
 		return actor.RetRepeatProcessing, nil
 	}
 
+	act.Scope().Bot.Notify(cb.Message.Chat, tb.Typing)
 	data, err := act.Scope().Api.Get("/projects/list")
 	if err != nil {
-		act.ToState(NewDefaultState())
-		return actor.RetProcessedOk, err
+		log.Warn("call api error: ", err)
+		return s.mainMenu.Activate(act, common.TXT_INTERNAL_ERROR)
 	}
 
 	var plist api.ProjectListResponse
@@ -104,19 +107,17 @@ func (s *SelectProjectState) OnCallback(act actor.Actor, cb *tb.Callback) (actor
 		return actor.RetProcessedOk, err
 	}
 
-	err = act.Storage().Set("projects", plist.Projects)
-	if err != nil {
-		log.Warn("save projects list error: ", err)
-		return toBegin(s, act, cb.Sender, txt_INTERNAL_ERROR)
-	}
-
-	blst := make([]helpers.BtnItem, 0, len(plist.Projects))
+	s.projects = plist.Projects
+	blst := make([]helpers.BtnItem, 0, len(s.projects))
 	for _, p := range plist.Projects {
 		blst = append(blst, helpers.BtnItem{p.Name, fmt.Sprintf("%d", p.Id)})
 	}
-	dlg, err := act.Scope().Bot.Edit(cb.Message, "Выберите проект..", helpers.NewButtonList(blst, beg, pageSize))
-	if dlg != nil {
+	dlg, err := act.Scope().Bot.Edit(cb.Message, common.TXT_TITLE_CREATE_BUG + "\n---\nВыберите проект..", helpers.NewButtonList(blst, beg, pageSize), tb.ModeHTML)
+	if err != nil {
+		log.Warnln("send message error: ", err)
+	} else {
 		act.Storage().Set("dialog", dlg)
 	}
+
 	return actor.RetProcessedOk, err
 }

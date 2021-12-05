@@ -10,3 +10,7 @@ api:
 
 poller:
   timeout: 10s
+
+media:
+  maxsize: 1 # Mb
+  maxcount: 5

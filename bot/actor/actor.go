@@ -9,20 +9,23 @@ import (
 type RetCode uint32
 
 const (
-	RetProcessedOk      = 0
-	RetRepeatProcessing = 1
+	RetProcessedOk      = RetCode(0)
+	RetRepeatProcessing = RetCode(1)
 )
 
 type Actor interface {
 	Name() string
-	StateName() string
 	OnStart(msg *tb.Message) (RetCode, error)
 	OnMessage(msg *tb.Message) (RetCode, error)
+	OnEdited(msg *tb.Message) (RetCode, error)
 	OnCallback(cb *tb.Callback) (RetCode, error)
+	OnUpload(msg *tb.Message) (RetCode, error)
 	ToState(newState State)
 	Log() *logrus.Entry
 	Scope() *scope.Scope
 	Storage() Storage
+	State() State
+	User() *tb.User
 }
 
 type DefaultActor struct {
@@ -40,6 +43,14 @@ func NewDefaultActor(scope *scope.Scope, user *tb.User, state State) *DefaultAct
 		user:    user,
 		storage: NewMemStorage(),
 	}
+}
+
+func (ba *DefaultActor) User() *tb.User {
+	return ba.user
+}
+
+func (ba *DefaultActor) State() State {
+	return ba.state
 }
 
 func (ba *DefaultActor) Scope() *scope.Scope {
@@ -72,8 +83,16 @@ func (ba *DefaultActor) OnMessage(msg *tb.Message) (RetCode, error) {
 	return ba.state.OnMessage(ba, msg)
 }
 
+func (ba *DefaultActor) OnEdited(msg *tb.Message) (RetCode, error) {
+	return ba.state.OnEdited(ba, msg)
+}
+
 func (ba *DefaultActor) OnCallback(cb *tb.Callback) (RetCode, error) {
 	return ba.state.OnCallback(ba, cb)
+}
+
+func (ba *DefaultActor) OnUpload(msg *tb.Message) (RetCode, error) {
+	return ba.state.OnUpload(ba, msg)
 }
 
 func (ba *DefaultActor) ToState(newState State) {

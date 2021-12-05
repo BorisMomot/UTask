@@ -25,7 +25,7 @@ func (f *FSM) OnMessage(act Actor, msg *tb.Message) error {
 		"func":   "OnMessage",
 	})
 
-	log.Tracef(msg.Text)
+	log.Traceln("on message: ", msg.Text)
 
 	var fn func(*tb.Message) (RetCode, error)
 
@@ -37,6 +37,29 @@ func (f *FSM) OnMessage(act Actor, msg *tb.Message) error {
 
 	for {
 		ret, err := fn(msg)
+		if err != nil {
+			return err
+		}
+		if ret != RetRepeatProcessing {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (f *FSM) OnEdited(act Actor, msg *tb.Message) error {
+
+	log := f.scope.Log.WithFields(logrus.Fields{
+		"actor":  act.Name(),
+		"userID": msg.Sender.ID,
+		"func":   "OnEdited",
+	})
+
+	log.Traceln("on_edited: ", msg.Text)
+
+	for {
+		ret, err := act.OnEdited(msg)
 		if err != nil {
 			return err
 		}
@@ -64,6 +87,29 @@ func (f *FSM) OnCallback(act Actor, cb *tb.Callback) error {
 
 	for {
 		ret, err := act.OnCallback(cb)
+		if err != nil {
+			return err
+		}
+		if ret != RetRepeatProcessing {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (f *FSM) OnUpload(act Actor, msg *tb.Message) error {
+
+	log := f.scope.Log.WithFields(logrus.Fields{
+		"actor":  act.Name(),
+		"userID": msg.Sender.ID,
+		"func":   "OnUpload",
+	})
+
+	log.Tracef("upload media")
+
+	for {
+		ret, err := act.OnUpload(msg)
 		if err != nil {
 			return err
 		}

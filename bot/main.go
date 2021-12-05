@@ -126,7 +126,8 @@ func main() {
 		srvApi = api.NewHttpApi(addr)
 	}
 
-	scope := scope.NewScope(bot, srvApi, log)
+	conf := NewUConfig()
+	scope := scope.NewScope(bot, srvApi, conf, log)
 	sess := session.NewSessionManager(scope)
 	fsm := actor.NewFSM(scope)
 
@@ -165,6 +166,48 @@ func main() {
 			return
 		}
 		err = fsm.OnCallback(actor, cb)
+		if err != nil {
+			l.WithFields(logrus.Fields{"actor": actor.Name()}).Errorln(err)
+		}
+	})
+
+	fnOnUpload := func(msg *tb.Message) {
+
+		l := log.WithFields(logrus.Fields{
+			"func":   "OnUpload",
+			"userID": msg.Sender.ID,
+		})
+
+		actor, err := sess.Restore(msg.Sender)
+		if err != nil {
+			l.Errorf("Restore session error: %s", err)
+			return
+		}
+		err = fsm.OnUpload(actor, msg)
+		if err != nil {
+			l.WithFields(logrus.Fields{"actor": actor.Name()}).Errorln(err)
+		}
+	}
+
+	bot.Handle(tb.OnAudio, fnOnUpload)
+	bot.Handle(tb.OnPhoto, fnOnUpload)
+	bot.Handle(tb.OnVideo, fnOnUpload)
+	bot.Handle(tb.OnDocument, fnOnUpload)
+	bot.Handle(tb.OnVoice, fnOnUpload)
+
+	bot.Handle(tb.OnEdited, func(msg *tb.Message) {
+
+		l := log.WithFields(logrus.Fields{
+			"func":   "OnEdited",
+			"userID": msg.Sender.ID,
+		})
+
+		actor, err := sess.Restore(msg.Sender)
+		if err != nil {
+			l.Errorf("Restore session error: %s", err)
+			return
+		}
+		err = fsm.OnEdited(actor, msg)
 		if err != nil {
 			l.WithFields(logrus.Fields{"actor": actor.Name()}).Errorln(err)
 		}
