@@ -9,6 +9,7 @@
 #include <db_manager_interface.h>
 #include <repository_interface.h>
 #include <user_repository_interface.h>
+#include <logger.h>
 /**
  * \brief Exception class to mark that user doesn't found
  * Return userid that doesn't found
@@ -31,9 +32,30 @@ public:
  */
 class UserRepository: public RepositoryInterface, public UserRepositoryInterface {
 public:
+  /**
+   * Save user data in DB
+   * @param user data
+   * @return true if everything fine
+   */
   bool addUser(const User &user) override;
+  /**
+   * Return user info from DB
+   * @param id of the user
+   * @return user info if userid was found in DB or throw UserNotFound exception
+   */
   const User &findById(uint id) override;
+  /**
+   * Update user info in DB
+   * @param id of the user
+   * @param user data to update
+   * @return true if everything fine or throw UserNotFound exception
+   */
   bool updateUser(uint id, const User &user) override;
+  /**
+   * Delete user
+   * @param id of the user
+   * @return true if everything fine or throw UserNotFound exception
+   */
   bool deleteUser(uint id) override;
 };
 

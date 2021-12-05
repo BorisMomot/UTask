@@ -12,6 +12,7 @@ target_include_directories(repository
         PRIVATE ${PROJECT_SOURCE_DIR}/include/domain/domain_model
         PRIVATE ${PROJECT_SOURCE_DIR}/include/domain/domain_repository_interface
         PRIVATE ${PROJECT_SOURCE_DIR}/include/repositories
+        PRIVATE ${PROJECT_SOURCE_DIR}/include/utils
 )
 
 target_link_libraries(repository sqlite_repo)

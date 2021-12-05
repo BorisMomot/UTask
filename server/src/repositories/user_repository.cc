@@ -11,7 +11,7 @@ bool UserRepository::addUser(const User &user) {
       auto query = UserSqliteHelper::addUserCommand(user);
       auto q_result = dbManagerInterface->executeQuery(query);
       if (q_result) {
-        // log user add:
+        LOG(INFO) << "User was added to DB: " << user;
         return true;
       } else {
         // log user doesn't added

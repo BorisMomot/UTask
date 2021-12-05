@@ -13,3 +13,10 @@ bool User::operator==(const User &rhs) const {
          userStatus == rhs.userStatus && userRoles == rhs.userRoles;
 }
 bool User::operator!=(const User &rhs) const { return !(rhs == *this); }
+std::ostream &operator<<(std::ostream &os, const User &user) {
+  os << "id: " << user.id << " userName: " << user.userName
+     << " firstName: " << user.firstName << " lastName: " << user.lastName
+     << " email: " << user.email << " phone: " << user.phone
+     << " userStatus: " << user.userStatus ;
+  return os;
+}

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <ostream>
 
 class User {
   uint64_t id;
@@ -30,6 +31,7 @@ public:
       : id(id), userName(userName), firstName(firstName), lastName(lastName),
         email(email), phone(phone), userStatus(userStatus),
         userRoles(userRoles) {}
+  friend std::ostream &operator<<(std::ostream &os, const User &user);
 
   const uint64_t getId() const { return id; }
   const std::string &getUserName() const { return userName; }
