@@ -1,5 +1,6 @@
 add_subdirectory(domain)
 add_subdirectory(repositories)
+add_subdirectory(services)
 add_subdirectory(pistache_server)
 #######################################################################################################
 # Test

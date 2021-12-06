@@ -5,6 +5,7 @@
 #ifndef GTEST_DEMO_USER_SQLITE_HELPER_H
 #define GTEST_DEMO_USER_SQLITE_HELPER_H
 
+#include <unordered_map>
 #include <string>
 #include <user.h>
 
@@ -25,6 +26,45 @@ public:
    * @param user
    * @return command to add user info to DB
    */
+
+  /**
+   * Get user available filters command
+   * @return command to SQLite
+   */
+  static std::string getUserFilters();
+
+  /**
+   * Get userName by user id
+   * @param userName
+   * @return command to SQLite
+   */
+  static std::string getUserIdByUserNameCommand(const std::string& userName);
+
+  /**
+   * Get all users
+   * @return command to SQLite
+   */
+  static std::string getAllUserCommand();
+  /**
+   * Get all users
+   * @param shift from 0 user in usersDB
+   * @return command to SQLite
+   */
+  static std::string getAllUserCommand(uint shift);
+  /**
+   * Get all users
+   * @param shift from 0 user in usersDB
+   * @param limit amount of returning users
+   * @return command to SQLite
+   */
+  static std::string getAllUserCommand(uint shift, uint limit);
+  /**
+   * Get all users that accept filters
+   * @param filters
+   * @return command to SQLite
+   */
+  static std::string getAllUsersCommand(std::unordered_map<std::string, std::string> filters);
+
   static std::string addUserCommand(const User& user);
   /**
    * Find user

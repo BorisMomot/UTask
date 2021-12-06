@@ -63,6 +63,46 @@ TEST(user_sqlite_helper, delete_user) {
   ASSERT_EQ(deleteUser, UserSqliteHelper::deleteUserCommand(id));
 }
 
+
+
+
+
+
+//  static std::string getUserFilters();
+TEST(user_sqlite_helper, get_users_filters) {
+  std::string getUsersFilters("");
+  ASSERT_EQ(getUsersFilters, UserSqliteHelper::getUserFilters());
+}
+//  static std::string getUserIdByUserNameCommand(const std::string& userName);
+TEST(user_sqlite_helper, get_usersid_by_name) {
+  std::string userName("Tom");
+  std::string getUserIdCommand("");
+  ASSERT_EQ(getUserIdCommand, UserSqliteHelper::getUserIdByUserNameCommand(userName));
+}
+//  static std::string getAllUserCommand();
+TEST(user_sqlite_helper, get_all_users) {
+  // check get all users command
+  std::string getAllUsersCommand("");
+  ASSERT_EQ(getAllUsersCommand, UserSqliteHelper::getAllUserCommand());
+
+  // check get all users command with shift
+  uint shift = 5;
+  std::string getAllUsersCommandShift("");
+  ASSERT_EQ(getAllUsersCommandShift, UserSqliteHelper::getAllUserCommand(shift));
+
+  // check get all users command with shift and limit amount
+  uint limit = 10;
+  std::string getAllUsersCommandLimit("");
+  ASSERT_EQ(getAllUsersCommandLimit, UserSqliteHelper::getAllUserCommand(shift, limit));
+}
+
+//  static std::string getAllUsersCommand(std::unordered_map<std::string, std::string> filters);
+TEST(user_sqlite_helper, get_filtered_users) {
+  std::unordered_map<std::string, std::string> filters {{"", ""}};
+  std::string getFilteredUsersCommand("");
+  ASSERT_EQ(getFilteredUsersCommand, UserSqliteHelper::getAllUsersCommand(filters));
+}
+
 //
 TEST(user_sqlite_helper, from_data_to_user) {
   //

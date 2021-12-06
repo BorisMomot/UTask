@@ -3,6 +3,7 @@
 //
 
 #include "user_sqlite_helper.h"
+#include <unordered_map>
 
 std::string UserSqliteHelper::createUserTableCommand() {
   return "CREATE table USERS (USERNAME TEXT, FIRSTNAME TEXT, LASTNAME TEXT, EMAIL TEXT, PHONE TEXT, USERSTATUS INT);";
@@ -42,4 +43,23 @@ User UserSqliteHelper::userFromData(
   auto user = ub.buildUser();
   return user;
 }
-
+std::string UserSqliteHelper::getUserFilters() {
+  return "";
+}
+std::string
+UserSqliteHelper::getUserIdByUserNameCommand(const std::string &userName) {
+  return "";
+}
+std::string UserSqliteHelper::getAllUserCommand() {
+  return "";
+}
+std::string UserSqliteHelper::getAllUserCommand(uint shift) {
+  return "";
+}
+std::string UserSqliteHelper::getAllUserCommand(uint shift, uint limit) {
+  return "";
+}
+std::string UserSqliteHelper::getAllUsersCommand(
+    std::unordered_map<std::string, std::string> filters) {
+  return "";
+}
