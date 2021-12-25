@@ -9,7 +9,7 @@
 #include <db_manager_interface.h>
 #include <repository_interface.h>
 #include <user_repository_interface.h>
-#include <logger.h>
+
 /**
  * \brief Exception class to mark that user doesn't found
  * Return userid that doesn't found

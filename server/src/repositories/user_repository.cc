@@ -4,6 +4,7 @@
 
 #include "user_repository.h"
 #include "sqlite/user_sqlite_helper.h"
+#include <logger.h>
 
 bool UserRepository::addUser(const User &user) {
   if (dbManagerInterface){

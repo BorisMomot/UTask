@@ -32,3 +32,4 @@ gtest_discover_tests(unit_tests
 
 add_subdirectory(domain)
 add_subdirectory(repositories)
+add_subdirectory(services)

@@ -6,6 +6,7 @@
 #define GTEST_DEMO_USER_SERVICE_INTERFACE_H
 
 #include <user.h>
+#include <list>
 
 /**
  * \brief Interface for working with User
@@ -18,8 +19,8 @@ public:
   virtual bool addUser(const User& user) = 0;
   virtual uint getUserId(const std::string& userName ) = 0;
   virtual User getUser(uint userId) = 0;
-  virtual updateUserInfo(uint userId, const User& user) = 0;
-  virtual deleteUser(uint userId) = 0;
+  virtual bool updateUserInfo(uint userId, const User& user) = 0;
+  virtual bool deleteUser(uint userId) = 0;
 };
 
 #endif // GTEST_DEMO_USER_SERVICE_INTERFACE_H
