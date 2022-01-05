@@ -6,24 +6,20 @@
 #define GTEST_DEMO_USER_REPOSITORY_INTERFACE_H
 
 #include <user.h>
-
-//GET /users - Print all users in system
-//GET /userfilters - Print all available filters for users
-//POST /user - Create user
-//GET /username/{username} - Get user id by user name
-//GET /user/{userId} - Get user by user id
-//PATCH /user/{userId} - Updated user
-//DELETE /user/{userId} - Delete user
-
-
+#include <list>
+/**
+ * @brief репозиторий для сохранения информации о пользователях
+ */
 class UserRepositoryInterface{
 public:
-
-
   virtual bool addUser(const User& user) = 0;
-  virtual const User& findById(uint id) = 0;
+  virtual User findById(uint id) = 0;
   virtual bool updateUser(uint id, const User& user) = 0;
   virtual bool deleteUser(uint id)= 0;
+  virtual uint getUserIdByName(const std::string& name) = 0;
+  virtual std::list<User> getAllUsers() = 0;
+  virtual std::list<User> getAllUsers(size_t limit) = 0;
+  virtual std::list<User> getAllUsers(size_t limit, size_t offset) = 0;
 };
 
 #endif // GTEST_DEMO_USER_REPOSITORY_INTERFACE_H

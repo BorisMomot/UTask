@@ -38,7 +38,6 @@ std::string UserSqliteHelper::checkUserTableExist() {
 User UserSqliteHelper::userFromData(
     const std::vector<std::vector<std::string>> &data) {
 
-  //
   UserBuilder ub;
   auto user = ub.buildUser();
   return user;

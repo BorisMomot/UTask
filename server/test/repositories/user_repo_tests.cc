@@ -19,7 +19,7 @@ TEST(user_repo, add_user){
   DBManagerMock dbManagerMock;
   EXPECT_CALL(dbManagerMock, executeQuery("")).Times(AtLeast(1));
 
-  UserRepository userRepository;
+  UserSQLiteRepository userRepository;
   userRepository.setDbManagerInterface(&dbManagerMock);
   //
   UserBuilder userBuilder;

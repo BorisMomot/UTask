@@ -30,7 +30,7 @@ public:
  * \brief Realisation of userRepository interface
  * Basic CRUD for SQLite
  */
-class UserRepository: public RepositoryInterface, public UserRepositoryInterface {
+class UserSQLiteRepository : public RepositoryInterface, public UserRepositoryInterface {
 public:
   /**
    * Save user data in DB
@@ -43,7 +43,7 @@ public:
    * @param id of the user
    * @return user info if userid was found in DB or throw UserNotFound exception
    */
-  const User &findById(uint id) override;
+  User findById(uint id) override;
   /**
    * Update user info in DB
    * @param id of the user
@@ -57,6 +57,39 @@ public:
    * @return true if everything fine or throw UserNotFound exception
    */
   bool deleteUser(uint id) override;
+  /**
+   * get user id
+   * @param name user name
+   * @return user id
+   */
+  uint getUserIdByName(const std::string &name) override;
+  /**
+   * get all users in repo
+   * @return list with users
+   */
+  std::list<User> getAllUsers() override;
+  /**
+   * get some users from repo
+   * @param limit max amount of users
+   * @return list with users
+   */
+  std::list<User> getAllUsers(size_t limit) override;
+  /**
+   * get some users from repo
+   * @param limit max amount of users
+   * @param offset offset from first
+   * @return list with users
+   */
+  std::list<User> getAllUsers(size_t limit, size_t offset) override;
+
+private:
+  User userFromRow(const std::vector<std::string>& row);
+  std::list<User> getAllUsers_(size_t limit, size_t offset);
+  bool addUser_(const User &user);
+  User findById_(uint id);
+  bool updateUser_(uint id, const User &user);
+  bool deleteUser_(uint id);
+  uint getUserIdByName_(const std::string &name);
 };
 
 #endif // GTEST_DEMO_USER_REPOSITORY_H
