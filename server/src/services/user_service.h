@@ -21,6 +21,14 @@ public:
   }
 };
 
+class UserRepositoryException: public std::exception{
+public:
+  const char *
+  what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT override {
+    return "Internal repository error";
+  }
+};
+
 
 class UserService: public UserServiceInterface {
   std::shared_ptr<UserRepositoryInterface> userRepository;

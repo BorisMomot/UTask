@@ -6,26 +6,18 @@
 #include <user_repository_interface.h>
 #include <db_manager_interface.h>
 #include <user_service.h>
-#include "user_repository.h"
 
 class RepoMock: public UserRepositoryInterface{
 public:
   MOCK_METHOD(bool, addUser, (const User &user), (override));
-  MOCK_METHOD(const User&, findById, (uint id), (override));
+  MOCK_METHOD(User, findById, (uint id), (override));
   MOCK_METHOD(bool, updateUser, (uint id, const User &user), (override));
   MOCK_METHOD(bool, deleteUser, (uint id), (override));
+  MOCK_METHOD(uint, getUserIdByName, (const std::string& name), (override));
+  MOCK_METHOD( std::list<User>, getAllUsers, (), (override));
+  MOCK_METHOD( std::list<User>, getAllUsers, (size_t limit), (override));
+  MOCK_METHOD( std::list<User>, getAllUsers, (size_t limit, size_t offset), (override));
 };
-
-class DBManagerFake: public DBManagerInterface {
-public:
-  bool init() override { return false; }
-  bool executeQuery(const std::string &query) override { return false; }
-  std::vector<std::vector<std::string>>
-  getDataFromQuery(const std::string &query) override {
-    return std::vector<std::vector<std::string>>{};
-  }
-};
-
 
 TEST(user_repo, add_user){
   using ::testing::AtLeast;

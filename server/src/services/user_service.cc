@@ -6,6 +6,8 @@
 #include "user_service.h"
 #include "../repositories/user_repository.h"
 #include "../repositories/sqlite/sqlite_manager.h"
+#include <logger.h>
+
 //#include <sqlite_manager.h>
 
 UserService::UserService() {
@@ -13,36 +15,68 @@ UserService::UserService() {
 
 std::list<User> UserService::getUsers() {
   if (!userRepository) { throw UserRepositoryUnset(); }
-  return std::list<User>{};
+  try{
+    return userRepository->getAllUsers();
+  } catch (...) {
+    LOG(LOG_ALERT) << "Internal error in user repository" << std::endl;
+    throw UserRepositoryException();
+  }
 }
 
 std::vector<std::string> UserService::getUserFilters() {
-  if (!userRepository) { throw UserRepositoryUnset(); }
-  return std::vector<std::string>{};
+  return std::vector<std::string>{"userName", "firstname", "lastname", "email", "phone", "userStatus"};
 }
 
 bool UserService::addUser(const User &user) {
   if (!userRepository) { throw UserRepositoryUnset(); }
-  return userRepository->addUser(user);
+  try{
+    return userRepository->addUser(user);
+  } catch (...) {
+    LOG(LOG_ALERT) << "Internal error in user repository" << std::endl;
+    throw UserRepositoryException();
+  }
 }
 
 uint UserService::getUserId(const std::string &userName) {
   if (!userRepository) { throw UserRepositoryUnset(); }
-  return 42;
+  try{
+    return userRepository->getUserIdByName(userName);
+  } catch (...) {
+    LOG(LOG_ALERT) << "Internal error in user repository" << std::endl;
+    throw UserRepositoryException();
+  }
 }
 
 User UserService::getUser(uint userId) {
   if (!userRepository) { throw UserRepositoryUnset(); }
-  return userRepository->findById(userId);
+  try{
+    return userRepository->findById(userId);
+  }
+  catch(...){
+    LOG(LOG_ALERT) << "Internal error in user repository" << std::endl;
+    throw UserRepositoryException();
+  }
 }
 bool UserService::updateUserInfo(uint userId, const User &user) {
   if (!userRepository) { throw UserRepositoryUnset(); }
-  return userRepository->updateUser(userId, user);
+  try{
+    return userRepository->updateUser(userId, user);
+  }
+  catch(...){
+    LOG(LOG_ALERT) << "Internal error in user repository" << std::endl;
+    throw UserRepositoryException();
+  }
 }
 
 bool UserService::deleteUser(uint userId) {
   if (!userRepository) { throw UserRepositoryUnset(); }
-  return userRepository->deleteUser(userId);
+  try{
+    return userRepository->deleteUser(userId);
+  }
+  catch(...){
+    LOG(LOG_ALERT) << "Internal error in user repository" << std::endl;
+    throw UserRepositoryException();
+  }
 }
 
 void UserService::setUserRepository(

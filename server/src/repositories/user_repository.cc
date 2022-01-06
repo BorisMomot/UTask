@@ -14,7 +14,7 @@ bool UserSQLiteRepository::addUser(const User &user) {
       LOG(LOG_ALERT) << " : add user command to db was failed: " << commandFailed.what() << " user param: " << user << std::endl;
       return false;
     } catch (...) {
-      LOG(LOG_CRIT) << " : undnown exception when we try to add user to db, user param: " << user << std::endl;
+      LOG(LOG_CRIT) << " : unknown exception when we try to add user to db, user param: " << user << std::endl;
       return false;
     }
   } else {
@@ -58,17 +58,17 @@ bool UserSQLiteRepository::updateUser(uint id, const User &user) {
     try {
       return updateUser_(id, user);
     } catch (DBNotFoundItem& dbNotFoundItem) {
-      // log - doesn't find item with id
+      LOG(LOG_ALERT) << " : doesn't find item " << dbNotFoundItem.what() << std::endl;
       return false;
     } catch (DBCommandFailed& dbCommandFailed) {
-      // log - command failed
+      LOG(LOG_ALERT) << " : db command failed " << dbCommandFailed.what() << std::endl;
       return false;
     } catch (...) {
-      // log - unknown exception
+      LOG(LOG_CRIT) << " : unknown exception" << std::endl;
       return false;
     }
   } else {
-    // log - dbManager == nullptr
+    LOG(LOG_ALERT) << " : db manager = nullptr" << std::endl;
     throw DBManagerInterfaceNullPtr();
   }
 }
@@ -76,10 +76,10 @@ bool UserSQLiteRepository::updateUser_(uint id, const User &user) {
   auto query = UserSqliteHelper::updateUserCommand(id, user);
   auto q_result = dbManagerInterface->executeQuery(query);
   if (q_result) {
-    // log - success
+    LOG(LOG_INFO) << " : user info updated " << user << std::endl;
     return true;
   } else {
-    // log - user doesn't updated
+    LOG(LOG_ALERT) << " : user info doesn't updated for id: " << id << std::endl;
     return false;
   }
 }
@@ -89,17 +89,17 @@ bool UserSQLiteRepository::deleteUser(uint id) {
     try {
       return deleteUser_(id);
     } catch (DBNotFoundItem& dbNotFoundItem) {
-      // log - doesn't find item with id
+      LOG(LOG_ALERT) << " : doesn't find user: " << id << " couldn't delete " << dbNotFoundItem.what() << std::endl;
       return false;
     } catch (DBCommandFailed& dbCommandFailed) {
-      // log - command failed
+      LOG(LOG_ALERT) << " : db command failed " << dbCommandFailed.what() << std::endl;
       return false;
     } catch (...) {
-      // log - unknown exception
+      LOG(LOG_CRIT) << " : unknown exception when we try to delete user id: " << id << std::endl;
       return false;
     }
   } else {
-    // log - dbManager == nullptr
+    LOG(LOG_ALERT) << " : db manager = nullptr" << std::endl;
     throw DBManagerInterfaceNullPtr();
   }
 }
@@ -107,10 +107,10 @@ bool UserSQLiteRepository::deleteUser_(uint id) {
   auto query = UserSqliteHelper::deleteUserCommand(id);
   auto q_result = dbManagerInterface->executeQuery(query);
   if (q_result) {
-    // log user delete:
+    LOG(LOG_INFO) << " : user with id: " << id << " was deleted" << std::endl;
     return true;
   } else {
-    // log user doesn't deleted
+    LOG(LOG_ALERT) << " : doesn't delete user with id: " << id << std::endl;
     return false;
   }
 }
@@ -119,31 +119,30 @@ uint UserSQLiteRepository::getUserIdByName(const std::string &name) {
   if (dbManagerInterface){
     try {
       return getUserIdByName_(name);
-    } catch (DBNotFoundItem) {
-      // log - doesn't find item with name
+    } catch (DBNotFoundItem& dbNotFoundItem) {
+      LOG(LOG_ALERT) << " : doesn't find user: " << name << " exception" << dbNotFoundItem.what() << std::endl;
       return 0;
-    } catch (DBCommandFailed) {
-      // log - command failed
+    } catch (DBCommandFailed& dbCommandFailed) {
+      LOG(LOG_ALERT) << " : command to get user id for user " << name << " failed, exception: " << dbCommandFailed.what() << std::endl;
       return 0;
     } catch (...) {
-      // log - unknown exception
+      LOG(LOG_CRIT) << " : unknown exception" << std::endl;
       return 0;
     }
   } else {
-    // log - dbManager == nullptr
+    LOG(LOG_ALERT) << " : db manager = nullptr" << std::endl;
     throw DBManagerInterfaceNullPtr();
   }
 }
-
 uint UserSQLiteRepository::getUserIdByName_(const std::string &name) {
   auto query = UserSqliteHelper::getUserIdByUserNameCommand(name);
   auto q_result = dbManagerInterface->getDataFromQuery(query);
   if (!q_result.empty()) {
-    // log find userid
+    LOG(LOG_INFO) << " : user id was found " << std::endl;
     auto res = q_result.begin()->begin();
     return std::stoi(*res);
   } else {
-    // log user doesn't find
+    LOG(LOG_ALERT) << " : doesn't find user with name: " << name << std::endl;
     return 0;
   }
 }
@@ -175,17 +174,18 @@ std::list<User> UserSQLiteRepository::getAllUsers_(size_t limit,
       for (auto const& row:q_result){
         users.emplace_back(userFromRow(row));
       }
-    } catch (DBNotFoundItem){
-      // log doesn't find any
+    } catch (DBNotFoundItem& dbNotFoundItem){
+      LOG(LOG_ALERT) << " : doesn't find any item, " << dbNotFoundItem.what() << std::endl;
       return std::list<User>{};
-    } catch (DBCommandFailed){
-      // log command failed
+    } catch (DBCommandFailed& dbCommandFailed){
+      LOG(LOG_ALERT) << " : command failed, exception: " << dbCommandFailed.what() << std::endl;
       return std::list<User>{};
     } catch (...) {
-      // log unknown problem
+      LOG(LOG_CRIT) << " : unknown exception" << std::endl;
       return std::list<User>{};
     }
   } else {
+    LOG(LOG_ALERT) << " : db manager = nullptr" << std::endl;
     throw DBManagerInterfaceNullPtr();
   }
   return std::list<User>{};
